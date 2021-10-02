@@ -300,6 +300,9 @@ def post_process_infobox(infobox):
             xml_value = xml_value.casefold()
         elif infobox_stat == 'milkname':
             xml_value = xml_value.casefold()
+            if xml_value == 'milk':
+                del cooked_infobox[infobox_stat]
+                continue
         elif infobox_stat in ['armorblunt', 'armorsharp', 'armorheat']:
             if float(xml_value) <= 2:
                 xml_value = str(round(float(xml_value)*100))
@@ -411,6 +414,7 @@ def look_at_xml(filename):
                 working_infobox['type'] = 'Mechanoid'
             elif base_name == 'DryadBase':
                 del working_infobox['manhuntertame']
+                working_infobox['meatname'] = 'immature dryad meat'
             elif 'filth' not in working_infobox.keys():
                 working_infobox['filth'] = '1'
             known_infoboxes[base_name] = add_to_infobox(working_infobox, thing_def)
