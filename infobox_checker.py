@@ -17,7 +17,6 @@ infobox_to_xml = OrderedDict([
     ('description', 'description'),
     ('type', ''),  # set manually by the base thingDefs
     ('type2', 'tradeTags.list'), # requires processing - uses a manual dictionary type_dict
-    ('type3', 'tradeTags.list'), # requires processing - uses a manual dictionary type_dict
     ('movespeed', 'statBases.MoveSpeed'),
     ('basemeatamount', 'statBases.MeatAmount'),
     ('baseleatheramount', 'statBases.LeatherAmount'),
@@ -41,6 +40,7 @@ infobox_to_xml = OrderedDict([
     ('eggtime', 'comps.li.eggLayIntervalDays'),
     ('eggs_unfertilized', 'comps.li.eggUnfertilizedDef'),
     ('predator', 'race.predator'),
+    ('herdanimal', 'race.herdAnimal'),
     ('bodysize', 'race.baseBodySize'),
     ('healthscale', 'race.baseHealthScale'),
     ('hungerrate', 'race.baseHungerRate'),
@@ -63,46 +63,49 @@ infobox_to_xml = OrderedDict([
     ('lifespan', 'race.lifeExpectancy'),
     ('juvenileage', 'race.lifeStageAges.2.minAge'), # list: 1 indicates first of list
     ('maturityage', 'race.lifeStageAges.3.minAge'),
-    ('attack1dmg', 'tool_verb_spliter?1?power'), # calls tool_verb_spliter(thing_def, 1, power)
-    ('attack1type', 'tool_verb_spliter?1?type'), 
-    ('attack1cool', 'tool_verb_spliter?1?cooldownTime'), 
-    ('attack1part', 'tool_verb_spliter?1?label'),
-    ('attack1chancefactor', 'tool_verb_spliter?1?chanceFactor'),
+    #('tradeTag', 'tradeTag.1'),
+    #('tradeTag2', 'tradeTag.2'),
+    ('tradeTags', 'keep'),
+    ('attack1dmg', 'tool_verb_splitter?1?power'), # calls tool_verb_splitter(thing_def, 1, power)
+    ('attack1type', 'tool_verb_splitter?1?type'), 
+    ('attack1cool', 'tool_verb_splitter?1?cooldownTime'), 
+    ('attack1part', 'tool_verb_splitter?1?linkedBodyPartsGroup'),
+    ('attack1chancefactor', 'tool_verb_splitter?1?chanceFactor'),
     ('attack1stun', 'tool_verb_splitter?1?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack1ap', 'tool_verb_splitter?1?armorPenetration'),
-    ('attack2dmg', 'tool_verb_spliter?2?power'),
-    ('attack2type', 'tool_verb_spliter?2?type'), 
-    ('attack2cool', 'tool_verb_spliter?2?cooldownTime'), 
-    ('attack2part', 'tool_verb_spliter?2?label'),
-    ('attack2chancefactor', 'tool_verb_spliter?2?chanceFactor'),
+    ('attack2dmg', 'tool_verb_splitter?2?power'),
+    ('attack2type', 'tool_verb_splitter?2?type'), 
+    ('attack2cool', 'tool_verb_splitter?2?cooldownTime'), 
+    ('attack2part', 'tool_verb_splitter?2?linkedBodyPartsGroup'),
+    ('attack2chancefactor', 'tool_verb_splitter?2?chanceFactor'),
     ('attack2stun', 'tool_verb_splitter?2?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack2ap', 'tool_verb_splitter?2?armorPenetration'),
-    ('attack3dmg', 'tool_verb_spliter?3?power'),
-    ('attack3type', 'tool_verb_spliter?3?type'), 
-    ('attack3cool', 'tool_verb_spliter?3?cooldownTime'), 
-    ('attack3part', 'tool_verb_spliter?3?label'),
-    ('attack3chancefactor', 'tool_verb_spliter?3?chanceFactor'),
+    ('attack3dmg', 'tool_verb_splitter?3?power'),
+    ('attack3type', 'tool_verb_splitter?3?type'), 
+    ('attack3cool', 'tool_verb_splitter?3?cooldownTime'), 
+    ('attack3part', 'tool_verb_splitter?3?linkedBodyPartsGroup'),
+    ('attack3chancefactor', 'tool_verb_splitter?3?chanceFactor'),
     ('attack3stun', 'tool_verb_splitter?3?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack3ap', 'tool_verb_splitter?3?armorPenetration'),
-    ('attack4dmg', 'tool_verb_spliter?4?power'),
-    ('attack4type', 'tool_verb_spliter?4?type'), 
-    ('attack4cool', 'tool_verb_spliter?4?cooldownTime'), 
-    ('attack4part', 'tool_verb_spliter?4?label'),
-    ('attack4chancefactor', 'tool_verb_spliter?4?chanceFactor'),
+    ('attack4dmg', 'tool_verb_splitter?4?power'),
+    ('attack4type', 'tool_verb_splitter?4?type'), 
+    ('attack4cool', 'tool_verb_splitter?4?cooldownTime'), 
+    ('attack4part', 'tool_verb_splitter?4?linkedBodyPartsGroup'),
+    ('attack4chancefactor', 'tool_verb_splitter?4?chanceFactor'),
     ('attack4stun', 'tool_verb_splitter?4?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack4ap', 'tool_verb_splitter?4?armorPenetration'),
-    ('attack5dmg', 'tool_verb_spliter?5?power'),
-    ('attack5type', 'tool_verb_spliter?5?type'), 
-    ('attack5cool', 'tool_verb_spliter?5?cooldownTime'), 
-    ('attack5part', 'tool_verb_spliter?5?label'),
-    ('attack5chancefactor', 'tool_verb_spliter?5?chanceFactor'),
+    ('attack5dmg', 'tool_verb_splitter?5?power'),
+    ('attack5type', 'tool_verb_splitter?5?type'), 
+    ('attack5cool', 'tool_verb_splitter?5?cooldownTime'), 
+    ('attack5part', 'tool_verb_splitter?5?linkedBodyPartsGroup'),
+    ('attack5chancefactor', 'tool_verb_splitter?5?chanceFactor'),
     ('attack5stun', 'tool_verb_splitter?5?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack5ap', 'tool_verb_splitter?5?armorPenetration'),
-    ('attack6dmg', 'tool_verb_spliter?6?power'),
-    ('attack6type', 'tool_verb_spliter?6?type'), 
-    ('attack6cool', 'tool_verb_spliter?6?cooldownTime'), 
-    ('attack6part', 'tool_verb_spliter?6?label'),
-    ('attack6chancefactor', 'tool_verb_spliter?6?chanceFactor'),
+    ('attack6dmg', 'tool_verb_splitter?6?power'),
+    ('attack6type', 'tool_verb_splitter?6?type'), 
+    ('attack6cool', 'tool_verb_splitter?6?cooldownTime'), 
+    ('attack6part', 'tool_verb_splitter?6?linkedBodyPartsGroup'),
+    ('attack6chancefactor', 'tool_verb_splitter?6?chanceFactor'),
     ('attack6stun', 'tool_verb_splitter?6?surpriseAttack.extraMeleeDamages.li.amount'),
     ('attack6ap', 'tool_verb_splitter?6?armorPenetration'),
     ('livesin_temperateforest', 'defName#1'), # looks up from BiomeDefs/
@@ -133,7 +136,7 @@ diet_dict = {
 
 type_dict = OrderedDict({
     'AnimalDryad': 'Dryad',
-    'AnimalInsect': 'Insect',
+    'AnimalInsect': 'Insectoid',
     'AnimalPet': 'Pet',
     'AnimalFarm': 'Farm',
     'AnimalExotic': 'Wild',
@@ -203,13 +206,32 @@ def generate_biome_dict(base_dir):
             biome_dict[biome_lowercasedefname] = {}
             try:
                 for animal in biome_def.find('wildAnimals'):
-                    biome_dict[biome_lowercasedefname][animal.tag] = animal.text
+                    commonality = animal.text
+                    if round(float(commonality)) == float(commonality):
+                        commonality = str(round(float(commonality)))
+                    biome_dict[biome_lowercasedefname][animal.tag] = commonality
             except TypeError:
                 pass
     return biome_dict
 
 
-def tool_verb_spliter(thing_def, attack, stat):
+def generate_capacity_dict(base_dir):
+    tree = ET.parse(base_dir + 'Data/Core/Defs/ToolCapacityDefs/ToolCapacity.xml')
+    capacity_dict = {}
+    for tool_capacity_def in tree.getroot().findall('ToolCapacityDef'):
+        capacity_dict[tool_capacity_def.find('defName').text] = tool_capacity_def.find('label').text
+    return capacity_dict
+
+
+def generate_bodypart_dict(base_dir):
+    tree = ET.parse(base_dir + 'Data/Core/Defs/Bodies/BodyPartGroups.xml')
+    bodypart_dict = {}
+    for body_part_group_def in tree.getroot().findall('BodyPartGroupDef'):
+        bodypart_dict[body_part_group_def.find('defName').text] = body_part_group_def.find('label').text
+    return bodypart_dict
+
+
+def tool_verb_splitter(thing_def, attack, stat):
     attack = int(attack)
     if 'tools' not in [stat.tag for stat in thing_def]:
         return '-'
@@ -220,25 +242,25 @@ def tool_verb_spliter(thing_def, attack, stat):
             separated_tool_verbs.append((tool, verb))
     if attack <= len(separated_tool_verbs):
         if stat == 'type':
-            return separated_tool_verbs[attack - 1][1]
-        try:
-            print(thing_def.find('defName').text, attack, stat, stat_finder(separated_tool_verbs[attack - 1][0], stat))
-        except: pass
-        print()
+            return capacity_dict[separated_tool_verbs[attack - 1][1]].capitalize()
         value = stat_finder(separated_tool_verbs[attack - 1][0], stat)
-        if value == '-' and stat == 'label':
-            value = stat_finder(separated_tool_verbs[attack - 1][0], 'linkedBodyPartsGroup').casefold()
+        if stat == 'linkedBodyPartsGroup':
+            value = bodypart_dict[value]
+        elif stat == 'armorPenetration' and value != '-':
+            value = str(round(float(value)*100))
         return value
     else:
         return '-'
+    
+    
 
 def add_to_infobox(parent_infobox, thing_def):
     new_infobox = {}
     for infobox_stat, xml_stat in infobox_to_xml.items():
         if type(xml_stat) is tuple:
             xml_value = [stat_finder(thing_def, single_xml_stat.split('#')[0]) for single_xml_stat in  xml_stat]
-        elif xml_stat.split('?')[0] == 'tool_verb_spliter':
-            xml_value = tool_verb_spliter(thing_def, attack=xml_stat.split('?')[1], stat=xml_stat.split('?')[2])
+        elif xml_stat.split('?')[0] == 'tool_verb_splitter':
+            xml_value = tool_verb_splitter(thing_def, attack=xml_stat.split('?')[1], stat=xml_stat.split('?')[2])
         else:  # for the ones given as tuples
             xml_value = stat_finder(thing_def, xml_stat.split('#')[0])
         new_infobox[infobox_stat] = xml_value
@@ -260,7 +282,9 @@ def post_process_infobox(infobox):
             del cooked_infobox[infobox_stat]
             continue
         elif infobox_stat == 'name':
-            xml_value = xml_value.replace(' dryad', '').capitalize()
+            if xml_value not in ['Immature dryad', 'immature dryad']:
+                xml_value = xml_value.replace(' dryad', '')
+            xml_value = xml_value.capitalize()
         elif infobox_stat[-4:] == 'part':
             if not type(xml_value) is str:  # if not already cooked
                 label = xml_value[0]
@@ -325,12 +349,20 @@ def post_process_infobox(infobox):
             xml_value = xml_value.split('~')[-1]
         elif infobox_stat == 'eggs_avg':
             if '~' in xml_value:
-                xml_value = str((int(xml_value.split('~')[0]) + int(xml_value.split('~')[-1]))/2)
+                xml_value = (int(xml_value.split('~')[0]) + int(xml_value.split('~')[-1]))/2
+                if round(xml_value) == xml_value:
+                    xml_value = round(xml_value)
+                xml_value = str(xml_value)
+                
         elif infobox_stat == 'eggs_unfertilized':
             if xml_value != 'false':
                 xml_value = 'true'
         elif infobox_stat == 'trainable':
             xml_value = xml_value.casefold()
+        elif infobox_stat == 'herdanimal':
+            if xml_value == 'false':
+                del cooked_infobox[infobox_stat]
+                continue
         elif infobox_stat == 'milkname':
             xml_value = xml_value.casefold()
             if xml_value == 'milk':
@@ -419,6 +451,8 @@ leather_dict = generate_leather_dict(base_dir)
 wool_dict = generate_wool_dict(base_dir)
 biome_dict = generate_biome_dict(base_dir)
 lifestage_dict = generate_lifestage_dict(base_dir)
+capacity_dict = generate_capacity_dict(base_dir)
+bodypart_dict = generate_bodypart_dict(base_dir)
 print()
 known_infoboxes = {}  # dictionary of form {defName: infobox} or {base_name: infobox} for parents
 
@@ -445,6 +479,7 @@ def look_at_xml(filename):
                 del working_infobox['manhuntertame'] 
                 del working_infobox['manhunter']
                 working_infobox['type'] = 'Mechanoid'
+                working_infobox['baseleatheramount'] = '0'
             elif base_name == 'DryadBase':
                 del working_infobox['manhuntertame']
                 working_infobox['meatname'] = 'immature dryad meat'
@@ -453,6 +488,25 @@ def look_at_xml(filename):
             known_infoboxes[base_name] = add_to_infobox(working_infobox, thing_def)
         else:
             known_infoboxes[stat_finder(thing_def, 'defName')] = add_to_infobox(working_infobox, thing_def)
+
+def final_processing(infobox):
+    if 'tameable' in infobox.keys():
+        del infobox['tameable']
+    if 'eggsmin' in infobox.keys() and 'eggs_unfertilized' not in infobox.keys():
+        infobox['eggs_unfertilized'] = 'false'
+    if 'offspring' in infobox.keys():
+        if type(infobox['offspring']) != str:
+            del infobox['offspring']
+    if 'avg offspring' in infobox.keys():
+        if type(infobox['avg offspring']) != str:
+            del infobox['avg offspring']
+    if 'meatname' in infobox.keys():
+        if infobox['meatname'] == infobox['name'] + ' meat':
+            del infobox['meatname']
+    if 'diet' in infobox.keys():
+        if infobox['diet'] == 'none':
+            del infobox['diet']
+    return infobox
 
 
 def compare_infoboxes(infobox_1, infobox_2):
@@ -490,15 +544,13 @@ for def_name, raw_infobox in known_infoboxes.items():
 name = input_infobox['name']
 for cooked_infobox in cooked_infoboxes.values():
     if 'name' in cooked_infobox.keys() and cooked_infobox['name'] == name:
-        correct_infobox = cooked_infobox
+        correct_infobox = final_processing(cooked_infobox)
         break
 else:
     print(f'ThingDef with label \"{name.casefold()}\" not found in {folders_to_look_at}')
     exit(1)
 
 
-compare_infoboxes(input_infobox, correct_infobox)
-print()
 
 
 def print_and_output(f, text):
@@ -509,7 +561,8 @@ with open(output_file, 'w') as f:
     print_and_output(f, '{{infobox main|animal|')
     for infobox_stat, xml_stat in infobox_to_xml.items():
         if xml_stat == 'keep':
-            print_and_output(f, f'|{infobox_stat} = {input_infobox[infobox_stat]}')
+            if infobox_stat in input_infobox.keys():
+                print_and_output(f, f'|{infobox_stat} = {input_infobox[infobox_stat]}')
         elif xml_stat == 'ver':
             with open(base_dir + 'Version.txt') as g:
                 print_and_output(f, f'|{infobox_stat} = {g.readline().split()[0]}')
@@ -520,3 +573,5 @@ with open(output_file, 'w') as f:
     print_and_output(f, '}}')
 
 
+print()
+compare_infoboxes(input_infobox, correct_infobox)
