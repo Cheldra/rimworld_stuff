@@ -11,11 +11,11 @@ input_file = 'input.txt'
 output_file = 'output.txt'
 
 infobox_to_xml = OrderedDict([
-    ('page verified for version', 'ver'), # ver indicates to use the version number from base_dir/Version.txt
+    ('page verified for version', 'keep'),
     ('name', 'label'),
     ('image', 'keep'), # keep indicates to maintain whatever's in the input infobox
     ('description', 'description'),
-    ('type', ''),
+    ('type', ''),  # set manually by the base thingDefs
     ('type2', 'tradeTags.list'), # requires processing - uses a manual dictionary type_dict
     ('type3', 'tradeTags.list'), # requires processing - uses a manual dictionary type_dict
     ('movespeed', 'statBases.MoveSpeed'),
@@ -63,42 +63,48 @@ infobox_to_xml = OrderedDict([
     ('lifespan', 'race.lifeExpectancy'),
     ('juvenileage', 'race.lifeStageAges.2.minAge'), # list: 1 indicates first of list
     ('maturityage', 'race.lifeStageAges.3.minAge'),
-    ('attack1dmg', 'tools.1.power'),
-    ('attack1type', 'tools.1.capacities.cat'), # cat indicates a list to be joined by /'s
-    ('attack1cool', 'tools.1.cooldownTime'), 
-    ('attack1part', ('tools.1.label', 'tools.1.linkedBodyPartsGroup')),
-    ('attack1chancefactor', 'tools.1.chanceFactor'),
-    ('attack1stun', 'tools.1.surpriseAttack.extraMeleeDamages.li.amount'),
-    ('attack2dmg', 'tools.2.power'),
-    ('attack2type', 'tools.2.capacities.cat'),
-    ('attack2cool', 'tools.2.cooldownTime'), 
-    ('attack2part', ('tools.2.label', 'tools.2.linkedBodyPartsGroup')),
-    ('attack2chancefactor', 'tools.2.chanceFactor'),
-    ('attack2stun', 'tools.2.surpriseAttack.extraMeleeDamages.li.amount'),
-    ('attack3dmg', 'tools.3.power'),
-    ('attack3type', 'tools.3.capacities.cat'),
-    ('attack3cool', 'tools.3.cooldownTime'), 
-    ('attack3part', ('tools.3.label', 'tools.3.linkedBodyPartsGroup')),
-    ('attack3chancefactor', 'tools.3.chanceFactor'),
-    ('attack3stun', 'tools.3.surpriseAttack.extraMeleeDamages.li.amount'),
-    ('attack4dmg', 'tools.4.power'),
-    ('attack4type', 'tools.4.capacities.cat'),
-    ('attack4cool', 'tools.4.cooldownTime'), 
-    ('attack4part', ('tools.4.label', 'tools.4.linkedBodyPartsGroup')),
-    ('attack4chancefactor', 'tools.4.chanceFactor'),
-    ('attack4stun', 'tools.4.surpriseAttack.extraMeleeDamages.li.amount'),
-    ('attack5dmg', 'tools.5.power'),
-    ('attack5type', 'tools.5.capacities.cat'),
-    ('attack5cool', 'tools.5.cooldownTime'), 
-    ('attack5part', ('tools.5.label', 'tools.5.linkedBodyPartsGroup')),
-    ('attack5chancefactor', 'tools.5.chanceFactor'),
-    ('attack5stun', 'tools.5.surpriseAttack.extraMeleeDamages.li.amount'),
-    ('attack6dmg', 'tools.6.power'),
-    ('attack6type', 'tools.6.capacities.cat'),
-    ('attack6cool', 'tools.6.cooldownTime'), 
-    ('attack6part', ('tools.6.label', 'tools.6.linkedBodyPartsGroup')),
-    ('attack6chancefactor', 'tools.6.chanceFactor'),
-    ('attack6stun', 'tools.6.surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack1dmg', 'tool_verb_spliter?1?power'), # calls tool_verb_spliter(thing_def, 1, power)
+    ('attack1type', 'tool_verb_spliter?1?type'), 
+    ('attack1cool', 'tool_verb_spliter?1?cooldownTime'), 
+    ('attack1part', 'tool_verb_spliter?1?label'),
+    ('attack1chancefactor', 'tool_verb_spliter?1?chanceFactor'),
+    ('attack1stun', 'tool_verb_splitter?1?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack1ap', 'tool_verb_splitter?1?armorPenetration'),
+    ('attack2dmg', 'tool_verb_spliter?2?power'),
+    ('attack2type', 'tool_verb_spliter?2?type'), 
+    ('attack2cool', 'tool_verb_spliter?2?cooldownTime'), 
+    ('attack2part', 'tool_verb_spliter?2?label'),
+    ('attack2chancefactor', 'tool_verb_spliter?2?chanceFactor'),
+    ('attack2stun', 'tool_verb_splitter?2?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack2ap', 'tool_verb_splitter?2?armorPenetration'),
+    ('attack3dmg', 'tool_verb_spliter?3?power'),
+    ('attack3type', 'tool_verb_spliter?3?type'), 
+    ('attack3cool', 'tool_verb_spliter?3?cooldownTime'), 
+    ('attack3part', 'tool_verb_spliter?3?label'),
+    ('attack3chancefactor', 'tool_verb_spliter?3?chanceFactor'),
+    ('attack3stun', 'tool_verb_splitter?3?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack3ap', 'tool_verb_splitter?3?armorPenetration'),
+    ('attack4dmg', 'tool_verb_spliter?4?power'),
+    ('attack4type', 'tool_verb_spliter?4?type'), 
+    ('attack4cool', 'tool_verb_spliter?4?cooldownTime'), 
+    ('attack4part', 'tool_verb_spliter?4?label'),
+    ('attack4chancefactor', 'tool_verb_spliter?4?chanceFactor'),
+    ('attack4stun', 'tool_verb_splitter?4?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack4ap', 'tool_verb_splitter?4?armorPenetration'),
+    ('attack5dmg', 'tool_verb_spliter?5?power'),
+    ('attack5type', 'tool_verb_spliter?5?type'), 
+    ('attack5cool', 'tool_verb_spliter?5?cooldownTime'), 
+    ('attack5part', 'tool_verb_spliter?5?label'),
+    ('attack5chancefactor', 'tool_verb_spliter?5?chanceFactor'),
+    ('attack5stun', 'tool_verb_splitter?5?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack5ap', 'tool_verb_splitter?5?armorPenetration'),
+    ('attack6dmg', 'tool_verb_spliter?6?power'),
+    ('attack6type', 'tool_verb_spliter?6?type'), 
+    ('attack6cool', 'tool_verb_spliter?6?cooldownTime'), 
+    ('attack6part', 'tool_verb_spliter?6?label'),
+    ('attack6chancefactor', 'tool_verb_spliter?6?chanceFactor'),
+    ('attack6stun', 'tool_verb_splitter?6?surpriseAttack.extraMeleeDamages.li.amount'),
+    ('attack6ap', 'tool_verb_splitter?6?armorPenetration'),
     ('livesin_temperateforest', 'defName#1'), # looks up from BiomeDefs/
     ('livesin_temperateswamp', 'defName#2'),
     ('livesin_borealforest', 'defName#3'),
@@ -130,10 +136,10 @@ type_dict = OrderedDict({
     'AnimalInsect': 'Insect',
     'AnimalPet': 'Pet',
     'AnimalFarm': 'Farm',
-    'AnimalExotic': 'Exotic',
-    'AnimalFighter': 'Fighter',
-    'AnimalUncommon': 'Uncommon',
-    'AnimalCommon': 'Common'})
+    'AnimalExotic': 'Wild',
+    'AnimalFighter': 'Wild',
+    'AnimalUncommon': 'Wild',
+    'AnimalCommon': 'Wild'})
 
 
 def stat_finder(thing_def, location_string):
@@ -203,13 +209,38 @@ def generate_biome_dict(base_dir):
     return biome_dict
 
 
+def tool_verb_spliter(thing_def, attack, stat):
+    attack = int(attack)
+    if 'tools' not in [stat.tag for stat in thing_def]:
+        return '-'
+    separated_tool_verbs = []
+    for tool in thing_def.find('tools').findall('li'):
+        verbs = [verb.text for verb in tool.find('capacities').findall('li')]
+        for verb in verbs:
+            separated_tool_verbs.append((tool, verb))
+    if attack <= len(separated_tool_verbs):
+        if stat == 'type':
+            return separated_tool_verbs[attack - 1][1]
+        try:
+            print(thing_def.find('defName').text, attack, stat, stat_finder(separated_tool_verbs[attack - 1][0], stat))
+        except: pass
+        print()
+        value = stat_finder(separated_tool_verbs[attack - 1][0], stat)
+        if value == '-' and stat == 'label':
+            value = stat_finder(separated_tool_verbs[attack - 1][0], 'linkedBodyPartsGroup').casefold()
+        return value
+    else:
+        return '-'
+
 def add_to_infobox(parent_infobox, thing_def):
     new_infobox = {}
     for infobox_stat, xml_stat in infobox_to_xml.items():
-        if type(xml_stat) is str:
-            xml_value = stat_finder(thing_def, xml_stat.split('#')[0])
-        else:  # for the ones given as tuples
+        if type(xml_stat) is tuple:
             xml_value = [stat_finder(thing_def, single_xml_stat.split('#')[0]) for single_xml_stat in  xml_stat]
+        elif xml_stat.split('?')[0] == 'tool_verb_spliter':
+            xml_value = tool_verb_spliter(thing_def, attack=xml_stat.split('?')[1], stat=xml_stat.split('?')[2])
+        else:  # for the ones given as tuples
+            xml_value = stat_finder(thing_def, xml_stat.split('#')[0])
         new_infobox[infobox_stat] = xml_value
     new_infobox = post_process_infobox(new_infobox)
     combined_infobox = copy.deepcopy(parent_infobox)
@@ -222,10 +253,10 @@ def post_process_infobox(infobox):
     cooked_infobox = copy.deepcopy(infobox)
     for infobox_stat, xml_value in infobox.items():
         #  exceptions
-        if infobox_stat == 'eggs_unfertilized':
-            if 'eggsmin' in cooked_infobox.keys():
-                xml_value = 'false'
-        if xml_value == '-':
+        #if infobox_stat == 'eggs_unfertilized':
+        #    if 'eggsmin' in cooked_infobox.keys():
+        #        xml_value = 'false'
+        if xml_value == '-' or xml_value == None:
             del cooked_infobox[infobox_stat]
             continue
         elif infobox_stat == 'name':
@@ -270,6 +301,10 @@ def post_process_infobox(infobox):
         elif infobox_stat == 'woolname':
             if xml_value not in wool_dict.values():  # if it's not already been cooked
                 xml_value = wool_dict[xml_value]
+        elif infobox_stat == 'gestation':
+            if 'eggsmin' in cooked_infobox.keys():
+                del cooked_infobox[infobox_stat]
+                continue
         elif infobox_stat == 'meatname':
             if xml_value[1] != '-':  # useMeatFrom
                 if xml_value[1] in known_infoboxes.keys():
@@ -294,8 +329,6 @@ def post_process_infobox(infobox):
         elif infobox_stat == 'eggs_unfertilized':
             if xml_value != 'false':
                 xml_value = 'true'
-        elif infobox_stat[-4:] == 'type' and infobox_stat[:6]== 'attack':
-            xml_value = xml_value.casefold()
         elif infobox_stat == 'trainable':
             xml_value = xml_value.casefold()
         elif infobox_stat == 'milkname':
@@ -440,7 +473,7 @@ def compare_infoboxes(infobox_1, infobox_2):
                 value_2 = g.readline().split()[0]
         
         if value_1 != value_2:
-            print(f'{infobox_stat}: {value_1} -> {value_2}')
+            print(f'{infobox_stat}: {value_1} -> {value_2};')
 
 
 folders_to_look_at = ['Data/Core/Defs/ThingDefs_Races/', 'Data/Ideology/Defs/ThingDefs_Races/']
