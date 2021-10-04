@@ -24,14 +24,25 @@ def generate_quality(skill_level):
     return value
 
 
+set_count = 10
 iterations = 10**5
 for skill_level in range(21):
-    outcomes = {o: 0 for o in range(6)}
-    for iteration in range(iterations):
-        outcomes[generate_quality(skill_level)] += 1
-    chances = []
-    for q in range(6):
-        chances.append(round(outcomes[q]/iterations*100, 2))
-        
-    print(skill_level, chances)
-    
+    sets = []
+    for s in range(set_count):
+        outcomes = {o: 0 for o in range(6)}
+        for i in range(iterations):
+            outcomes[generate_quality(skill_level)] += 1
+        sets.append([outcomes[q]/iterations for q in range(6)])
+    sums = [0 for q in range(6)]
+    for set in sets:
+        for q, chance in enumerate(set):
+            sums[q] += chance
+    means = [s/set_count for s in sums]
+    total_divergences = [0 for q in range(6)]
+    for set in sets:
+        for q, chance in enumerate(set):
+            total_divergences[q] += (chance - means[q])**2
+    std_deviations = [(d/set_count)**0.5 for d in total_divergences]
+    print('|-')
+    print('| ' + str(skill_level) + ' || ' + ' || '.join([str(round(means[q]*100, 2)) + '+-' + str(round(std_deviations[q]*100, 2)) for q in range(6)]))
+
