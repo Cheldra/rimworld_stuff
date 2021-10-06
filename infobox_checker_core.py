@@ -157,6 +157,9 @@ def default_0(supplied):
         return supplied
     return '0'
 
+def para(string):
+    return string.replace('\\n', '<br>').replace('<br><br>', '<br>')
+
 def lc(string):
     return string.lower()
 
@@ -200,7 +203,8 @@ def xml_to_infobox(xml_dict, input_dict, all_propagated_dicts):
         source = plants
     else:
         pp(xml_dict)
-        raise NotImplementedError(f'no rules to handle def with category \"{category}\" defined yet')
+        print(f'WARNING: no rules to handle def with category \"{category}\" defined yet, continuing')
+        return
     infobox = {}
     for infobox_stat, rule in source.rules.items():
         if type(rule) == str:
@@ -213,12 +217,16 @@ def xml_to_infobox(xml_dict, input_dict, all_propagated_dicts):
         function = rule[0]
         location_strings = rule[1]
         args = []
+        if len(rule) > 2:
+            args = rule[2]
         any_found = False
         if function.__name__ == 'keep':
             args = [infobox_stat, input_dict]
             any_found = True
         elif function.__name__ == 'def_to_label':
             args = [all_propagated_dicts]
+        elif 'lookup' in function.__name__:
+            args += [base_dir]
         elif function.__name__ == 'default_0':
             any_found = True
         for location_string in location_strings:
@@ -259,7 +267,7 @@ def write_infobox(infobox):
     else:
         col = 'none'
     
-    print(f'{{infobox main|{col}|')
+    print('{{' + f'infobox main|{col}|')
     for stat, val in infobox.items():
         print(f'|{stat} = {val}')
     print('}}')
@@ -268,14 +276,15 @@ def write_infobox(infobox):
 def compare_infoboxes(infobox_1, infobox_2):
     for stat_1, val_1 in infobox_1.items():
         if stat_1 not in infobox_2.keys():
-            print(f'{stat_1}: {val_1} -> -')
+            if val_1 != '':
+                print(f'{stat_1}: {val_1} -> -;')
             continue
         val_2 = infobox_2[stat_1]
-        if val_1 != infobox_2[stat_1]:
-            print(f'{stat_1}: {val_1} -> {val_2}')
+        if val_1.strip('\"') != infobox_2[stat_1]:
+            print(f'{stat_1}: {val_1} -> {val_2};')
     for stat_2, val_2 in infobox_2.items():
         if stat_2 not in infobox_1.keys():
-            print(f'{stat_2}: - -> {val_2}')
+            print(f'{stat_2}: - -> {val_2};')
 
 
 if __name__ == '__main__':
@@ -311,6 +320,8 @@ if __name__ == '__main__':
             print()
             pp(filtered_dict)
             output_infobox = xml_to_infobox(filtered_dict, input_infobox, all_propagated_dicts)
+            if output_infobox == None:
+                continue
             write_infobox(output_infobox)
             if input_infobox != None:
                 compare_infoboxes(input_infobox, output_infobox)
