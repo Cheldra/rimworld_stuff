@@ -17,9 +17,10 @@ def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, re
                     for f, pregnancy in enumerate(pregnant_list):  # he looks for a female
                         if pregnancy == None:  # that isn't pregnant
                             pregnant_list[f] = 0  # she becomes pregnant
-                            if time_between_pregnancy_tracker[f] != None:
-                                inter_pregnancy_interval_list.append(time_between_pregnancy_tracker[f])
-                            time_between_pregnancy_tracker[f] = 0
+                            if random.random() < 0.5:  # if the impregnation is sucessful
+                                if time_between_pregnancy_tracker[f] != None:
+                                    inter_pregnancy_interval_list.append(time_between_pregnancy_tracker[f])
+                                time_between_pregnancy_tracker[f] = 0
                             break  # he stops looking to mate
         for f, pregnancy in enumerate(pregnant_list): # each female
             if pregnancy != None:  # if pregnant
@@ -129,7 +130,7 @@ for rest_effectiveness in [1.25, 1.6]:
 
     
 
-flattened_rows = sorted(flattened_rows, key=lambda row: (row[4], row[5], row[6], row[7], row[2]))
+flattened_rows = sorted(flattened_rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
 with open('output.csv', 'w') as f:
     f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (h),mate mtb (h),rest effectiveness (none = never sleeps)\n')
     for row in flattened_rows:
