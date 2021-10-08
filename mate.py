@@ -80,59 +80,100 @@ def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_e
     return ret
 
 
-target_pop=20
-flattened_rows = []
-for rest_effectiveness in [None, 0.8, 1]:
-    for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
-        min_males = max(math.floor(1/female_ratio), 1)
-        min_females = int(female_ratio*min_males)
-        pop_scale = max(round(target_pop/(min_males+min_females)), 1)
-        females = min_females*pop_scale
-        males = min_males*pop_scale
-        gestation_and_matemtbs = [(5.661, 8),  (6.66, 8),  (5.61, 12), (5.661, 12), (6, 12), (6.66, 12), (8.5, 12), (10, 12), (12, 12), (13.32, 12), (20, 12)]
-        gestation_and_matemtbs = sorted(gestation_and_matemtbs, key=lambda g_and_m: g_and_m[0]/g_and_m[1])
-        egginterval_and_matemtbs = [(1, 8), (2, 8), (1.333, 12), (3.333, 12), (5.661, 12), (6.66, 12), (10, 12)]
-        egginterval_and_matemtbs = sorted(egginterval_and_matemtbs, key=lambda e_and_m: e_and_m[0]/e_and_m[1])
+def females_and_males_from_ratio(target_pop, female_ratio):
+    min_males = max(math.floor(1/female_ratio), 1)
+    min_females = female_ratio*min_males
+    pop_scale = max(round(target_pop/(min_males+min_females)), 1)
+    females = round(min_females*pop_scale)
+    males = min_males*pop_scale
+    return females, males
+
+
+gestation_and_matemtbs = [(5.661, 8),  (6.66, 8),  (5.61, 12), (5.661, 12), (6, 12), (6.66, 12), (8.5, 12), (10, 12), (12, 12), (13.32, 12), (20, 12)]
+egginterval_and_matemtbs = [(1, 8), (2, 8), (1.333, 12), (3.333, 12), (5.661, 12), (6.66, 12), (10, 12)]
+
+def main_table():
+    target_pop=20
+    flattened_rows = []
+    for rest_effectiveness in [None, 0.8, 1]:
+        for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
+            females, males = females_and_males_from_ratio(target_pop, female_ratio)
+            gestation_and_matemtbs = sorted(gestation_and_matemtbs, key=lambda g_and_m: g_and_m[0]/g_and_m[1])
+            egginterval_and_matemtbs = sorted(egginterval_and_matemtbs, key=lambda e_and_m: e_and_m[0]/e_and_m[1])
+            for gestation, mate_mtb in gestation_and_matemtbs:
+                pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+                time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
+                row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness]
+                print(row)
+                flattened_rows.append(row)
+            for egg_interval, mate_mtb in egginterval_and_matemtbs:
+                egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+                egg_wasted_time = egg_interval/(0.01*egg_growing_proportion) - egg_interval
+                row = [round(egg_growing_proportion, 4), round(egg_wasted_time, 4), females, males, None, egg_interval, mate_mtb, rest_effectiveness]
+                print(row)
+                flattened_rows.append(row)
+            print()
+
+
+    for rest_effectiveness in [1.25, 1.6]:
+        females = 20
+        males = 1
+        mate_mtb = 12
+        gestation = 6.66
+        pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+        time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
+        row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness]
+        print(row)
+        flattened_rows.append(row)
+        
+        females = 15
+        males = 3
+        mate_mtb = 8
+        egg_interval = 1
+        egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+        egg_wasted_time = egg_interval/(0.01*egg_growing_proportion) - egg_interval
+        row = [round(egg_growing_proportion, 4), round(egg_wasted_time, 4), females, males, None, egg_interval, mate_mtb, rest_effectiveness]
+        print(row)
+        flattened_rows.append(row)
+        
+
+    flattened_rows = sorted(flattened_rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
+    with open('output.csv', 'w') as f:
+        f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (days),mate mtb (h),rest effectiveness (none = never sleeps)\n')
+        for row in flattened_rows:
+            f.write(','.join(str(c) for c in row) + '\n')
+            
+
+def best_ratio_experiment():
+    rows = []
+    
+    for rest_effectiveness in [None, 0.8, 1, 1.25, 1.6]:
+        if rest_effectiveness != None:
+            time_to_exhaustion = 18.189
+            time_to_full_rest = 10.5*0.72/rest_effectiveness
+            proportion_awake = time_to_exhaustion/(time_to_full_rest + time_to_exhaustion)
+        else:
+            proportion_awake = 1
+        
         for gestation, mate_mtb in gestation_and_matemtbs:
-            pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
-            time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
-            row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness]
-            print(row)
-            flattened_rows.append(row)
-        for egg_interval, mate_mtb in egginterval_and_matemtbs:
-            egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
-            egg_wasted_time = egg_interval/(0.01*egg_growing_proportion) - egg_interval
-            row = [round(egg_growing_proportion, 4), round(egg_wasted_time, 4), females, males, None, egg_interval, mate_mtb, rest_effectiveness]
-            print(row)
-            flattened_rows.append(row)
+            theoretical_ideal_ratio = 0.5*gestation*24/mate_mtb*proportion_awake
+            females_upper, males = females_and_males_from_ratio(20, theoretical_ideal_ratio)
+            for females in [females_upper - 2 , females_upper - 1, females_upper, females_upper + 1]:
+                pregnant_proportion = simulate_gestational(females=females, males=males, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+                time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
+                row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness, round(theoretical_ideal_ratio, 4), round(females/males, 4)]
+                print(row)
+                rows.append(row)
+            print()
         print()
 
+    rows = sorted(rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
+    with open('best_ratio_experiment.csv', 'w') as f:
+        f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (days),mate mtb (h),rest effectiveness (none = never sleeps), theoretical best ratio, this ratio\n')
+        for row in rows:
+            f.write(','.join(str(c) for c in row) + '\n')
+            
+        
+best_ratio_experiment()
+#main_table()
 
-for rest_effectiveness in [1.25, 1.6]:
-    females = 20
-    males = 1
-    mate_mtb = 12
-    gestation = 6.66
-    pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
-    time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
-    row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness]
-    print(row)
-    flattened_rows.append(row)
-    
-    females = 15
-    males = 3
-    mate_mtb = 8
-    egg_interval = 1
-    egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
-    egg_wasted_time = egg_interval/(0.01*egg_growing_proportion) - egg_interval
-    row = [round(egg_growing_proportion, 4), round(egg_wasted_time, 4), females, males, None, egg_interval, mate_mtb, rest_effectiveness]
-    print(row)
-    flattened_rows.append(row)
-
-    
-
-flattened_rows = sorted(flattened_rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
-with open('output.csv', 'w') as f:
-    f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (days),mate mtb (h),rest effectiveness (none = never sleeps)\n')
-    for row in flattened_rows:
-        f.write(','.join(str(c) for c in row) + '\n')
