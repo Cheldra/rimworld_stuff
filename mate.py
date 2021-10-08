@@ -1,7 +1,7 @@
 import random
 import math
 
-def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=10**3, v=False):
+def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=5*10**3, v=False):
     if rest_effectiveness != None:
         time_to_exhaustion = 18.189
         time_to_full_rest = 10.5*0.72/rest_effectiveness
@@ -46,7 +46,7 @@ def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, re
     return ret
 
 
-def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=10**3, v=False):
+def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=5*10**3, v=False):
     if rest_effectiveness != None:
         time_to_exhaustion = 18.189
         time_to_full_rest = 10.5*0.72/rest_effectiveness
@@ -146,26 +146,47 @@ def main_table():
 
 def best_ratio_experiment():
     rows = []
-    
-    for rest_effectiveness in [None, 0.8, 1, 1.25, 1.6]:
-        if rest_effectiveness != None:
-            time_to_exhaustion = 18.189
-            time_to_full_rest = 10.5*0.72/rest_effectiveness
-            proportion_awake = time_to_exhaustion/(time_to_full_rest + time_to_exhaustion)
-        else:
-            proportion_awake = 1
-        
-        for gestation, mate_mtb in gestation_and_matemtbs:
-            theoretical_ideal_ratio = 0.5*gestation*24/mate_mtb*proportion_awake
-            females_upper, males = females_and_males_from_ratio(20, theoretical_ideal_ratio)
-            for females in [females_upper - 2 , females_upper - 1, females_upper, females_upper + 1]:
-                pregnant_proportion = simulate_gestational(females=females, males=males, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
-                time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
-                row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness, round(theoretical_ideal_ratio, 4), round(females/males, 4)]
-                print(row)
-                rows.append(row)
+    tested_params = []
+    for target_pop in [5, 10, 20, 50, 100]:
+        for rest_effectiveness in [None, 0.8, 1, 1.25, 1.6]:
+            if rest_effectiveness != None:
+                time_to_exhaustion = 18.189
+                time_to_full_rest = 10.5*0.72/rest_effectiveness
+                proportion_awake = time_to_exhaustion/(time_to_full_rest + time_to_exhaustion)
+            else:
+                proportion_awake = 1
+            
+            for gestation, mate_mtb in gestation_and_matemtbs:
+                theoretical_ideal_ratio = 0.5*gestation*24/mate_mtb*proportion_awake
+                females_upper, males = females_and_males_from_ratio(target_pop, theoretical_ideal_ratio)
+                for females in [females_upper - 2 , females_upper - 1, females_upper, females_upper + 1]:
+                    if females < 1:
+                        continue
+                    if (males, females, gestation, mate_mtb, rest_effectiveness) in tested_params:
+                        continue
+                    tested_params.append((males, females, gestation, mate_mtb, rest_effectiveness))
+                    pregnant_proportion = simulate_gestational(females=females, males=males, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+                    time_between_pregnancies = gestation/(0.01*pregnant_proportion) - gestation
+                    row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, gestation, None, mate_mtb, rest_effectiveness, round(theoretical_ideal_ratio, 4), round(females/males, 4)]
+                    print(row)
+                    rows.append(row)
+                print()
+            for egg_interval, mate_mtb in egginterval_and_matemtbs:
+                theoretical_ideal_ratio = 1*egg_interval*24/mate_mtb*proportion_awake
+                females_upper, males = females_and_males_from_ratio(target_pop, theoretical_ideal_ratio)
+                for females in [females_upper - 2 , females_upper - 1, females_upper, females_upper + 1]:
+                    if females < 1:
+                        continue
+                    if (males, females, gestation, mate_mtb, rest_effectiveness) in tested_params:
+                        continue
+                    tested_params.append((males, females, gestation, mate_mtb, rest_effectiveness))
+                    pregnant_proportion = simulate_egglaying(females=females, males=males, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+                    time_between_pregnancies = egg_interval/(0.01*pregnant_proportion) - egg_interval
+                    row = [round(pregnant_proportion, 4), round(time_between_pregnancies, 4), females, males, None, egg_interval, mate_mtb, rest_effectiveness, round(theoretical_ideal_ratio, 4), round(females/males, 4)]
+                    print(row)
+                    rows.append(row)
+                print()
             print()
-        print()
 
     rows = sorted(rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
     with open('best_ratio_experiment.csv', 'w') as f:
