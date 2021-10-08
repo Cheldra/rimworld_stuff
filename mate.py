@@ -16,8 +16,8 @@ def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, re
                 if random.random() < 1/mate_mtb:  # might mate
                     for f, pregnancy in enumerate(pregnant_list):  # he looks for a female
                         if pregnancy == None:  # that isn't pregnant
-                            pregnant_list[f] = 0  # she becomes pregnant
                             if random.random() < 0.5:  # if the impregnation is sucessful
+                                pregnant_list[f] = 0  # she becomes pregnant
                                 if time_between_pregnancy_tracker[f] != None:
                                     inter_pregnancy_interval_list.append(time_between_pregnancy_tracker[f])
                                 time_between_pregnancy_tracker[f] = 0
@@ -44,6 +44,10 @@ def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, re
             print(f'{time_between_pregnancy_tracker.count(None)} females were never pregnant')
         print(f'total of {total_pregnant_time}h of pregnancy, or {total_pregnant_time/females}h per female, or {ret}% of female-time was spent pregnant')
     return ret
+
+print(simulate_gestational(v=True))
+exit()
+
 
 def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=10**3, v=False):
     if rest_effectiveness != None:
