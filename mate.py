@@ -79,6 +79,7 @@ def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_e
 
 
 target_pop=20
+flattened_rows = []
 for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
     min_males = max(math.floor(1/female_ratio), 1)
     min_females = int(female_ratio*min_males)
@@ -90,7 +91,6 @@ for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
     gestation_and_matemtbs = sorted(gestation_and_matemtbs, key=lambda g_and_m: g_and_m[0]/g_and_m[1])
     egginterval_and_matemtbs = [(1, 8), (2, 8), (1.333, 12), (3.333, 12), (5.661, 12), (6.66, 12), (10, 12)]
     egginterval_and_matemtbs = sorted(egginterval_and_matemtbs, key=lambda e_and_m: e_and_m[0]/e_and_m[1])
-    flattened_rows = []
     for gestation, mate_mtb in gestation_and_matemtbs:
         pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=None)
         row = [females, males, gestation, None, mate_mtb, pregnant_proportion]
