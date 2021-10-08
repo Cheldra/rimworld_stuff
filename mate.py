@@ -45,9 +45,6 @@ def simulate_gestational(males=1, females=20, gestation=6.66*24, mate_mtb=12, re
         print(f'total of {total_pregnant_time}h of pregnancy, or {total_pregnant_time/females}h per female, or {ret}% of female-time was spent pregnant')
     return ret
 
-print(simulate_gestational(v=True))
-exit()
-
 
 def simulate_egglaying(males=1, females=20, egg_interval=24, mate_mtb=12, rest_effectiveness=0.8, simulation_time=10**5, warmup_time=10**3, v=False):
     if rest_effectiveness != None:
