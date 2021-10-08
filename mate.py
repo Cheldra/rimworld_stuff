@@ -106,4 +106,4 @@ for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
 with open('output.csv', 'w') as f:
     f.write('females,males,gestation (days),egg interval (h),mate mtb (h),productive female-time (%)\n')
     for row in flattened_rows:
-        f.write(','.join(str(c) for c in row))
+        f.write(','.join(str(c) for c in row) + '\n')
