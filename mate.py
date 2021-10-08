@@ -117,6 +117,8 @@ for rest_effectiveness in [1.25, 1.6]:
     print(row)
     flattened_rows.append(row)
     
+    females = 15
+    males = 3
     mate_mtb = 8
     egg_interval = 1
     egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
@@ -126,6 +128,8 @@ for rest_effectiveness in [1.25, 1.6]:
     flattened_rows.append(row)
 
     
+
+flattened_rows = sorted(flattened_rows, key=lambda row: (row[4], row[5], row[6], row[7], row[2]))
 with open('output.csv', 'w') as f:
     f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (h),mate mtb (h),rest effectiveness (none = never sleeps)\n')
     for row in flattened_rows:
