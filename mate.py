@@ -93,17 +93,35 @@ for female_ratio in  [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100]:
     egginterval_and_matemtbs = sorted(egginterval_and_matemtbs, key=lambda e_and_m: e_and_m[0]/e_and_m[1])
     for gestation, mate_mtb in gestation_and_matemtbs:
         pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=None)
-        row = [females, males, gestation, None, mate_mtb, pregnant_proportion]
+        row = [pregnant_proportion, females, males, gestation, None, mate_mtb, None]
         print(row)
         flattened_rows.append(row)
     for egg_interval, mate_mtb in egginterval_and_matemtbs:
         egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=None)
-        row = [females, males, None, egg_interval, mate_mtb, egg_growing_proportion]
+        row = [egg_growing_proportion, females, males, None, egg_interval, mate_mtb, None]
         print(row)
         flattened_rows.append(row)
     print()
 
+for rest_effectiveness in [0.8, 1, 1.25, 1.6]:
+    females = 20
+    males = 1
+    mate_mtb = 12
+    
+    gestation = 6.66
+    pregnant_proportion = simulate_gestational(males=males, females=females, gestation=gestation*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+    row = [pregnant_proportion, females, males, gestation, None, mate_mtb, rest_effectiveness]
+    print(row)
+    flattened_rows.append(row)
+    
+    egg_interval = 1
+    egg_growing_proportion = simulate_egglaying(males=males, females=females, egg_interval=egg_interval*24, mate_mtb=mate_mtb, rest_effectiveness=rest_effectiveness)
+    row = [egg_growing_proportion, females, males, None, egg_interval, mate_mtb, rest_effectiveness]
+    print(row)
+    flattened_rows.append(row)
+    
+    
 with open('output.csv', 'w') as f:
-    f.write('females,males,gestation (days),egg interval (h),mate mtb (h),productive female-time (%)\n')
+    f.write('productive female-time (%),females,males,gestation (days),egg interval (h),mate mtb (h),rest effectiveness\n')
     for row in flattened_rows:
         f.write(','.join(str(c) for c in row) + '\n')
