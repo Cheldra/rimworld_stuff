@@ -133,6 +133,6 @@ for rest_effectiveness in [1.25, 1.6]:
 
 flattened_rows = sorted(flattened_rows, key=lambda row: (row[4] is None, row[4], row[4] is None, row[5] is None, row[5], row[6] is None, row[6], row[7] is None, row[7], row[2] is None, row[2]))
 with open('output.csv', 'w') as f:
-    f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (h),mate mtb (h),rest effectiveness (none = never sleeps)\n')
+    f.write('productive female-time (%), wasted female-time per offspring (days), females,males,gestation (days),egg interval (days),mate mtb (h),rest effectiveness (none = never sleeps)\n')
     for row in flattened_rows:
         f.write(','.join(str(c) for c in row) + '\n')
