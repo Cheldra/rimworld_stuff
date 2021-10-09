@@ -221,7 +221,7 @@ def label_thing(all_propagated_dicts, *def_names):
 def span(string):
     return string.split('~')[0] + '-' + string.split('~')[1]
 
-def remove_default(string, default):
+def remove_default(default, string):
     if string != default:
         return string
 

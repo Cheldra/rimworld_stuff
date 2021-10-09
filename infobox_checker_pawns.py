@@ -13,11 +13,10 @@ def define_rules():
         'image': (core.keep, []),
         'description': (core.para, ['description']),
         'type': (animal_type, ['race.thinkTreeMain']),
-        'type2': (animal_subtype, ['race.thinkTreeMain']),
+        'type2': (animal_subtype, ['race.thinkTreeMain', 'race.fleshType']),
         'movespeed': 'statBases.MoveSpeed',
         'basemeatamount': 'statBases.MeatAmount',
         'baseleatheramount': (leather_default, ['statBases.LeatherAmount', 'race.leatherDef']),
-        'leathername': (core.label_thing, ['race.leatherDef']),
         'armorblunt': (percent, ['statBases.ArmorRating_Blunt']),
         'armorsharp': (percent, ['statBases.ArmorRating_Sharp']),
         'armorheat': (percent, ['statBases.ArmorRating_Heat']),
@@ -27,36 +26,36 @@ def define_rules():
         'marketvalue': 'statBases.MarketValue',
         'filth rate': 'statBases.FilthRate',
         'ridingspeed': 'statBases.CaravanRidingSpeedFactor',
-        'milkname': (core.lc, ['comps.li.milkDef']),
-        'milktime': 'comps.li.milkIntervalDays',
-        'milk': (core.label_thing, ['comps.li.milkAmount']), # looks up Items_Resource_Stuff -> label
-        'woolname': (core.label_thing, ['comps.li.woolDef']),
-        'sheartime': 'comps.li.shearIntervalDays',
-        'wool': 'comps.li.woolAmount',
+        'milkname': (core.remove_default, ['comps.li-CompProperties_Milkable.milkDef'], ['Milk']),
+        'milktime': 'comps.li-CompProperties_Milkable.milkIntervalDays',
+        'milk': 'comps.li-CompProperties_Milkable.milkAmount',
+        'woolname': (core.label_thing, ['comps.li-CompProperties_Shearable.woolDef']),
+        'sheartime': 'comps.li-CompProperties_Shearable.shearIntervalDays',
+        'wool': 'comps.li-CompProperties_Shearable.woolAmount',
         'eggsmin': (eggs, ['comps.li-CompProperties_EggLayer.eggCountRange'], ['min']),
         'eggsmax': (eggs, ['comps.li-CompProperties_EggLayer.eggCountRange'], ['max']),
         'eggs_avg': (eggs, ['comps.li-CompProperties_EggLayer.eggCountRange'], ['avg']),
         'eggtime': 'comps.li-CompProperties_EggLayer.eggLayIntervalDays',
-        'eggs_unfertilized': (core.notfalse, ['comps.li-CompProperties_EggLayer.eggUnfertilizedDef']),
+        'eggs_unfertilized': (fertilised, ['comps.li-CompProperties_EggLayer.eggUnfertilizedDef', 'comps.li-CompProperties_EggLayer.eggFertilizedDef']),
         'predator': (core.notfalse, ['race.predator']),
         'herdanimal': (core.notfalse, ['race.herdAnimal']),
         'bodysize': 'race.baseBodySize',
         'healthscale': 'race.baseHealthScale',
         'hungerrate': 'race.baseHungerRate',
         'diet': (diet, ['race.foodType']),
+        'leathername': (core.label_thing, ['race.leatherDef']),
         'wildness': 'race.wildness',
         'petness': 'race.petness',
-        'tameable': 'race.playerCanChangeMaster',
-        'manhunter': (manhunt, ['race.manhunterOnDamageChance', 'race.playerCanChangeMaster', 'race.thinkTreeMain'], ['harm']),
         'manhuntertame': (manhunt, ['race.manhunterOnTameFailChance', 'race.playerCanChangeMaster', 'race.thinkTreeMain'], ['tame']),
+        'manhunter': (manhunt, ['race.manhunterOnDamageChance', 'race.playerCanChangeMaster', 'race.thinkTreeMain'], ['harm']),
         'roamMtb': 'race.roamMtbDays',
         'trainable': (trainable, ['race.trainability', 'race.thinkTreeMain']), 
         'nuzzleMtb': 'race.nuzzleMtbHours',
         'packanimal': 'race.packAnimal',
         'meatname': (meat_thing, ['race.meatLabel', 'race.useMeatFrom']),
         'gestation': (gestation, ['race.gestationPeriodDays', 'comps.li-CompProperties_EggLayer.eggCountRange']),
-        'offspring': (offspring_lookup, ['comps.li-CompProperties_EggLayer.eggCountRange', 'race.litterSizeCurve.points.list', 'race.lifeStageAges.tuples'], ['range']),
-        'avg offspring': (offspring_lookup, ['comps.li-CompProperties_EggLayer.eggCountRange', 'race.litterSizeCurve.points.list', 'race.lifeStageAges.tuples'], ['avg']),
+        'offspring': (offspring_lookup, ['comps.li-CompProperties_EggLayer.eggCountRange', 'race.gestationPeriodDays', 'race.litterSizeCurve.points.list', 'race.lifeStageAges.tuples'], ['range']),
+        'avg offspring': (offspring_lookup, ['comps.li-CompProperties_EggLayer.eggCountRange', 'race.gestationPeriodDays', 'race.litterSizeCurve.points.list', 'race.lifeStageAges.tuples'], ['avg']),
         'mateMtb': 'race.mateMtbHours',
         'babyscale': (babyscale_lookup, ['race.lifeStageAges.1.def']),
         'lifespan': 'race.lifeExpectancy',
@@ -125,11 +124,13 @@ def animal_type(thinktree):
         return 'Mechanoid'
     return 'Animal'
 
-def animal_subtype(thinktree):
+def animal_subtype(thinktree, fleshtype):
     if thinktree == 'Dryad':
         return 'Dryad'
     elif thinktree == 'Humanlike':
         return 'Human'
+    if fleshtype == 'Insectoid':
+        return 'Insectoid'
 
 def leather_default(actual, leatherdefname):
     if actual != None and actual != '40':
@@ -150,6 +151,13 @@ def eggs(minmaxavg, eggsrange):
     eggsavg = str(round((float(eggsmin) + float(eggsmax)) / 2, 3))
     return eggsavg
 
+def fertilised(unfert_def, fert_def):
+    print(unfert_def, fert_def)
+    if unfert_def != None:
+        return 'true'
+    if fert_def != None:
+        return 'false'
+
 def diet(foodtypes):
     diet_dict = {
         'OmnivoreHuman': 'omnivorous',
@@ -161,6 +169,7 @@ def diet(foodtypes):
         'VegetarianRoughAnimal': 'herbivorous',
         'DendrovoreAnimal': 'dendrovorous',
         'CarnivoreAnimalStrict': 'raw meat and corpses',
+        'None': '!none'
         }
     diets = []
     for foodtype in foodtypes.split(','):
@@ -196,8 +205,10 @@ def gestation(gestation_period, egg_range):
     if egg_range == None:
         return gestation_period
 
-def offspring_lookup(range_or_avg, base_dir, egg_range, *littersizepoints_and_lifestagetuples):
+def offspring_lookup(range_or_avg, base_dir, egg_range, gestation, *littersizepoints_and_lifestagetuples):
     if egg_range != None:
+        return
+    if gestation == None:
         return
     # check whether or not it is reproductive
     max_lifestage = -1
@@ -231,13 +242,15 @@ def offspring_lookup(range_or_avg, base_dir, egg_range, *littersizepoints_and_li
 
 def babyscale_lookup(base_dir, baby_defname):
     root = ET.parse(base_dir + 'Core/Defs/Misc/LifeStageDefs/LifeStages.xml').getroot()
-    for lifestagedef in root.find('LifeStageDef'):
-        if lifestagedef.find('defName') != baby_defname:
+    for lifestagedef in root.findall('LifeStageDef'):
+        if lifestagedef.find('defName').text != baby_defname:
             continue
-        babyscale = lifestagedef.find('bodySizeFactor').text
-        if babyscale == '0.2':
-            return
-        return babyscale    
+        if lifestagedef.find('bodySizeFactor') != None:
+            babyscale = lifestagedef.find('bodySizeFactor').text
+            if babyscale == '0.2':
+                return
+            return babyscale
+    print(f'WARNING: could not find lifestagedef \"{baby_defname}\"')
 
 def tool_verb_splitter(attack_number, stat, *tooltuples):
     capacities_by_part = {i: 0 for i in range(1, 7)}
@@ -263,7 +276,7 @@ def tool_verb_splitter(attack_number, stat, *tooltuples):
             if stat == 'type':
                 location_string = f'tools.{part_number}.capacities.{capacity_number}'
                 if location_string in tools_dict:
-                    return tools_dict[location_string]
+                    return core.breakup(tools_dict[location_string]).capitalize()
                 return
             if stat == 'cool':
                 location_string = f'tools.{part_number}.cooldownTime'
@@ -273,7 +286,7 @@ def tool_verb_splitter(attack_number, stat, *tooltuples):
             if stat == 'part':
                 location_string = f'tools.{part_number}.linkedBodyPartsGroup'
                 if location_string in tools_dict:
-                    body_part_dict = {'HeadAttackTool': 'head', 'HornAttackTool': 'horn'}
+                    body_part_dict = {'HeadAttackTool': 'head', 'HornAttackTool': 'horn', 'TuskAttackTool': 'tusk', 'TurtleBeakAttackTool': 'beak'}
                     if tools_dict[location_string] in body_part_dict:
                         return body_part_dict[tools_dict[location_string]]
                     return core.breakup(tools_dict[location_string]).lower()
