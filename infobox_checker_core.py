@@ -4,7 +4,10 @@ import xml.etree.ElementTree as ET
 from pprint import pprint as pp
 import argparse
 
-import infobox_checker_plants as plants
+import infobox_checker_plants
+import infobox_checker_buildings
+import infobox_checker_pawns
+
 
 base_dir = str(Path.home()) + '/games/rimworld/RimWorld1-3-3117Linux/Data/'
 input_file = 'input.txt'
@@ -135,6 +138,8 @@ def analyse_key(all_propagated_dicts, filters, key):
 def tidy(string):
     if string == None or string.lower() == 'none':
         return
+    if string[0] == '!':
+        return string[1:]
     if len(string.split('.')) > 2:
         return string
     if '.' in string and string.replace('.', '').isnumeric() and float(string) == round(float(string)):
@@ -146,25 +151,30 @@ def tidy(string):
 def keep(infobox_stat, input_dict, *args):
     if input_dict == None:
         if len(args) == 0: # no default given
-            return ' '
+            return
         else:
             return args[0].capitalize()
     if infobox_stat in input_dict:
         return input_dict[infobox_stat]
 
-def default_0(supplied):
-    if supplied != None:
-        return supplied
-    return '0'
+def default(d, actual):
+    if actual != None:
+        return actual
+    return d
 
 def para(string):
     return string.replace('\\n', '<br>').replace('<br><br>', '<br>')
 
 def lc(string):
+    if string == None:
+        string = 'None'
     return string.lower()
 
-
 def cat(*args):
+    if args[0] == 'sort':
+        args = sorted(args[1:])
+    elif args[0] == 'sort-reverse':
+        args = sorted(args[1:], reverse=True)
     ret = ', '.join([a for a in args if a != None])
     if ret != '':
         return ret
@@ -183,6 +193,11 @@ def notnone(*args):
             return 'false'
     return 'true'
 
+def notfalse(*args):
+    for arg in args:
+        if arg != None and arg.lower() != 'false':
+            return 'true'
+
 def breakup(string):
     output_string = ''
     j = 0
@@ -193,59 +208,90 @@ def breakup(string):
     output_string += string[j:]
     return output_string.strip().lower()
 
+def label_thing(all_propagated_dicts, *def_names):
+    labels = []
+    for def_name in def_names:
+        try:
+            labels.append(all_propagated_dicts[def_name]['label'])
+        except KeyError:
+            print(f'WARNING: could not find label of defname \"{def_name}\", using as-is')
+            labels.append(def_name)
+    return cat(*labels)
 
-def def_to_label(all_propagated_dicts, def_name):
-    return all_propagated_dicts[def_name]['label']
+def span(string):
+    return string.split('~')[0] + '-' + string.split('~')[1]
+
+def remove_default(string, default):
+    if string != default:
+        return string
+
+def apply_rule(xml_dict, input_dict, all_propagated_dicts, infobox_stat, rule):
+    if type(rule) == str:
+        if rule in xml_dict:
+            return tidy(xml_dict[rule])
+        return
+    if type(rule) != tuple:
+        print(f'warning: rule {rule} not given as string or tuple, skipping')
+        return
+    function = rule[0]
+    location_strings = rule[1]
+    args = []
+    if len(rule) > 2:
+        args = rule[2]  # hard arguments
+    any_found = False
+    if function.__name__ == 'keep':
+        args += [infobox_stat, input_dict]
+        any_found = True
+    elif '_thing' in function.__name__:
+        args += [all_propagated_dicts]
+    elif 'lookup' in function.__name__:
+        args += [base_dir]
+    elif 'default' in function.__name__:
+        any_found = True
+    for location_string in location_strings:
+        if location_string[-5:] == '.list': # gives [list of values]
+            for present_location_string in xml_dict.keys():
+                if location_string[:-5] == present_location_string[:len(location_string) - 5] and xml_dict[present_location_string] != None:
+                    args.append(xml_dict[present_location_string])
+                    any_found = True
+        elif location_string[-7:] == '.tuples':  #gives everything as [(location_string, value), ...]
+            for present_location_string in xml_dict.keys():
+                if location_string[:-7] == present_location_string[:len(location_string) - 7] and xml_dict[present_location_string] != None:
+                    args.append((present_location_string, xml_dict[present_location_string]))
+                    any_found = True
+        else:
+            if location_string in xml_dict.keys() and xml_dict[location_string] != None:
+                args.append(xml_dict[location_string])
+                any_found = True
+            else:
+                args.append(None)
+    if not any_found:
+        return
+    try:
+        value = tidy(function(*args))
+    except:
+        raise RuntimeError(xml_dict['label'], infobox_stat, rule)
+    if value != None:
+        return value
+    
+
 
 def xml_to_infobox(xml_dict, input_dict, all_propagated_dicts):
     category = xml_dict['category']
     if category == 'Plant':
-        source = plants
+        source = infobox_checker_plants
+    elif category == 'Building':
+        source = infobox_checker_buildings
+    elif category == 'Pawn':
+        source = infobox_checker_pawns
     else:
-        pp(xml_dict)
         print(f'WARNING: no rules to handle def with category \"{category}\" defined yet, continuing')
         return
     infobox = {}
-    for infobox_stat, rule in source.rules.items():
-        if type(rule) == str:
-            if rule in xml_dict:
-                infobox[infobox_stat] = tidy(xml_dict[rule])
-            continue
-        if type(rule) != tuple:
-            print(f'warning: rule {rule} not given as string or tuple, skipping')
-            continue
-        function = rule[0]
-        location_strings = rule[1]
-        args = []
-        if len(rule) > 2:
-            args = rule[2]
-        any_found = False
-        if function.__name__ == 'keep':
-            args = [infobox_stat, input_dict]
-            any_found = True
-        elif function.__name__ == 'def_to_label':
-            args = [all_propagated_dicts]
-        elif 'lookup' in function.__name__:
-            args += [base_dir]
-        elif function.__name__ == 'default_0':
-            any_found = True
-        for location_string in location_strings:
-            if location_string[-5:] == '.list':
-                for present_location_string in xml_dict.keys():
-                    if location_string[:-5] == present_location_string[:len(location_string) - 5]:
-                        args.append(xml_dict[present_location_string])
-                        any_found = True
-            else:
-                if location_string in xml_dict.keys():
-                    args.append(xml_dict[location_string])
-                    any_found = True
-                else:
-                    args.append(None)
-        if not any_found:
-            continue
-        value = tidy(function(*args))
-        if value != None:
-            infobox[infobox_stat] = value
+    for infobox_stat, rule in source.define_rules().items():
+        val = apply_rule(xml_dict, input_dict, all_propagated_dicts, infobox_stat, rule)
+        if val != None:
+            infobox[infobox_stat] = val
     return infobox
 
 
@@ -262,7 +308,7 @@ def parse_infobox(input_file):
             
 
 def write_infobox(infobox):
-    if infobox['type'].lower() in ['animal', 'plant', 'weapon', 'area', 'structure', 'production', 'security', 'furniture', 'resource']:
+    if infobox['type'].lower() in ['animal', 'plant', 'weapon', 'area', 'building', 'resource']:
         col = infobox['type'].lower()
     else:
         col = 'none'

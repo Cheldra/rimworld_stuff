@@ -119,6 +119,11 @@ for filename in os.listdir(base_dir):
         except AttributeError:
             pass
         try:
+            row['Mate mtb'] = race.find('mateMtbHours').text
+        except AttributeError:
+            pass
+
+        try:
             row['Riding speed'] = thing_def.find('statBases').find('CaravanRidingSpeedFactor').text
         except AttributeError:
             pass
@@ -184,7 +189,8 @@ for row in rows:
 
     
 
-headers = ['Animal', 'Base size', 'Base hunger', 'Juvenile age', 'Adult age', 'Gestation period', 'Expected litter size', 'Egg interval', 'Expected clutch size', 'Milk interval', 'Milk amount', 'Tame manhunter chance', 'Hunt manhunter chance', 'Roam mtb', 'Riding speed', 'Wildness', 'Filth rate', 'Nuzzle interval', 'A. hunger', 'J. hunger', 'B. hunger', 'J. size', 'B. size', 'A. meat', 'J. meat', 'B. meat', 'A. leather', 'J. leather', 'B. leather', '9F1MASl tot. cons.', '9F1MASl tot. prod.', '9F1MASl eff.', '9F1MBSl tot. cons.', '9F1MBSl tot. prod.', '9F1MBSl eff.', '9F milk prod.']
+#headers = ['Animal', 'Base size', 'Base hunger', 'Juvenile age', 'Adult age', 'Gestation period', 'Expected litter size', 'Egg interval', 'Expected clutch size', 'Milk interval', 'Milk amount', 'Tame manhunter chance', 'Hunt manhunter chance', 'Roam mtb', 'Riding speed', 'Wildness', 'Filth rate', 'Nuzzle interval', 'A. hunger', 'J. hunger', 'B. hunger', 'J. size', 'B. size', 'A. meat', 'J. meat', 'B. meat', 'A. leather', 'J. leather', 'B. leather', '9F1MASl tot. cons.', '9F1MASl tot. prod.', '9F1MASl eff.', '9F1MBSl tot. cons.', '9F1MBSl tot. prod.', '9F1MBSl eff.', '9F milk prod.']
+headers = ['Animal', 'Base size', 'Base hunger', 'Juvenile age', 'Adult age', 'Gestation period', 'Expected litter size', 'Egg interval', 'Expected clutch size', 'Mate mtb',  'Milk interval', 'Milk amount', 'Tame manhunter chance', 'Hunt manhunter chance', 'Roam mtb', 'Riding speed', 'Wildness', 'Filth rate', 'Nuzzle interval', 'A. hunger', 'J. hunger', 'B. hunger', 'J. size', 'B. size', 'A. meat', 'J. meat', 'B. meat', 'A. leather', 'J. leather', 'B. leather']
 with open('animal_productivity.csv', 'w') as f:
     f.write(','.join(headers) + '\n')
     for row in rows:
