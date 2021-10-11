@@ -308,7 +308,9 @@ def parse_infobox(input_file):
             
 
 def write_infobox(infobox):
-    if infobox['type'].lower() in ['animal', 'plant', 'weapon', 'area', 'building', 'resource']:
+    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production']:
+        col = infobox['type2'].lower()
+    elif infobox['type'].lower() in ['animal', 'plant', 'weapon', 'area', 'building', 'resource']:
         col = infobox['type'].lower()
     else:
         col = 'none'

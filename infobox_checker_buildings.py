@@ -11,15 +11,15 @@ def define_rules():
         'imagesize': (core.keep, []),
         'description': (core.para, ['description']),
         'type': 'category',
-        'type2': (categorise, ['designationCategory', 'label', 'building.isNaturalRock', 'building.isResourceRock']),
-        'placeable': (core.notnone, ['designationCategory']),  # should maybe be hidden
+        'type2': (categorise, ['designationCategory', 'label', 'building.isNaturalRock', 'building.isResourceRock', 'building.buildingTags.list']),
+        'placeable': (placeable_default, ['designationCategory']),  # should maybe be hidden
         'path cost': 'pathCost',
         'passability': (core.breakup, ['passability']),  # new
         'blockswind': 'blockWind',  # new
         'cover': 'fillPercent',
-        'minifiable': (core.notnone, ['minifiedDef']),  # new        
-        'size': (by, ['size']),
-        'mass base': 'statBases.Mass',
+        'minifiable': (minifiable_default, ['minifiedDef', 'designationCategory', 'stealable']),  # new        
+        'size': (by_default, ['size']),
+        'mass base':(core.depend, ['statBases.Mass', 'minifiedDef']),
         'flammability': 'statBases.Flammability',
         'hp': 'statBases.MaxHitPoints',
         'sell price multiplier': (core.depend, ['statBases.SellPriceFactor', 'minifiedDef']),
@@ -28,6 +28,7 @@ def define_rules():
         'cleanliness': 'statBases.Cleanliness',
         'rest effectiveness': 'statBases.BedRestEffectiveness',
         'power': (power, ['comps.li-CompProperties_Power.basePowerConsumption']),
+        'efficiency': (efficiency, ['statBases.ResearchSpeedFactor', 'statBases.WorkTableWorkSpeedFactor']),
         'immunity gain speed factor': 'statBases.ImmunityGainSpeedFactor',
         'medical qualty offset': 'statBases.MedicalTendQualityOffset',
         'surgery success chance factor': 'statBases.SurgerySuccessChanceFactor',
@@ -41,7 +42,6 @@ def define_rules():
         'tradeability': 'tradeability',  # new
         'skill 1': (construction_needed, ['constructionSkillPrerequisite']), 
         'skill 1 level': 'constructionSkillPrerequisite',
-        'work to uninstall': 'building.uninstallWork',
         'work to make': (core.depend, ['statBases.WorkToBuild', 'designationCategory']),
         'stuff tags': (core.cat, ['stuffCategories.list']),  # need to make these only print if placeable
         'resource 1': (cost_thing, ['costStuffCount', 'costList.tuples', ], [1, 'resource']),
@@ -52,7 +52,7 @@ def define_rules():
         'resource 3 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [3, 'amount']),
         'resource 4': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'resource']),
         'resource 4 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'amount']),
-        'deconstructible': (deconstructible, ['building.deconstructible', 'stealable']),  # new
+        'deconstructable': (deconstructable, ['building.deconstructible', 'stealable']),  # new
         #'deconstruct yield': (core.keep, []),  # should be removed
         'deconstructyieldfraction': 'resourcesFractionWhenDeconstructed',  # new
         'leavesresourceswhendestroyed': (kill_resource, ['leaveResourcesWhenKilled', 'costList.tuples']),  # new
@@ -64,7 +64,7 @@ def define_rules():
         'minedropchance': 'building.mineableDropChance'  # new
         }
 
-def categorise(designation, label, natural_rock, resource_rock):
+def categorise(designation, label, natural_rock, resource_rock, *building_tags):
     if designation != None:
         return designation
     if 'ancient' in label:
@@ -73,11 +73,27 @@ def categorise(designation, label, natural_rock, resource_rock):
         return 'Ore'
     if natural_rock != None:
         return 'Stone'
+    if 'MechClusterMember' in building_tags:
+        return 'Mechanoid cluster'
 
-def by(in_brackets):
+def placeable_default(designation):
+    if designation != None:
+        return 'true'
+    return 'false'
+
+def by_default(in_brackets):
+    if in_brackets == None:
+        return '1 ˣ 1'
     n_1 = in_brackets.split(',')[0].strip('(').strip()
     n_2 = in_brackets.split(',')[1].strip(')').strip()
     return f'{n_1} ˣ {n_2}'
+
+def minifiable_default(minified_def, designation_category, stealable):
+    if designation_category != None or (stealable != None and stealable.lower() == 'true'):
+        if minified_def != None:
+            return 'true'
+        else:
+            return 'false'
 
 def cost_thing(resource_index, resource_or_amount, all_propagated_dicts, stuff_amount, *resource_amounts):
     if resource_index == 1 and stuff_amount != None:
@@ -114,7 +130,13 @@ def facilities_thing(all_propagated_dicts, *facility_defnames):
     facility_labels = [core.label_thing(all_propagated_dicts, f) for f in facility_defnames]
     return core.cat(*facility_labels)
 
-def deconstructible(deconst, stealable):
+def efficiency(research_speed, worktable_speed):
+    if research_speed != None:
+        return research_speed
+    if worktable_speed != None:
+        return worktable_speed
+
+def deconstructable(deconst, stealable):
     if (deconst != None and deconst.lower() == 'false') or (stealable != None and stealable.lower() == 'false'):
         return 'false'
 
@@ -126,12 +148,13 @@ def destroy_thing(all_propagated_dicts, *kill_leavings):
     for location_string, kill_leaving in kill_leavings:
         resource_defname = location_string.split('.')[-1]
         resource_label = core.label_thing(all_propagated_dicts, resource_defname).capitalize()
-        strings.append(f'{kill_leaving} ' + '{{' + f'Icon small|{resource_label}' + '}}')
+        strings.append('{{' + f'Icon small|{resource_label}' + '}}' + f' {kill_leaving}')
     return ' + '.join(strings)
 
 def kill_resource(leavesresources, *cost_tuples):
     if len(cost_tuples) > 1:
-        return leavesresources
+        if leavesresources.lower() != 'true':
+            return leavesresources.lower()
 
 def power(base_consumption):
     return str(int(base_consumption)*-1)  # doesn't work for solar generator
