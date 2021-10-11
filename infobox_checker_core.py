@@ -136,7 +136,7 @@ def analyse_key(all_propagated_dicts, filters, key):
     return value_label_dict, counts, sum([len(v) for v in value_label_dict.values()])
 
 def tidy(string):
-    if string == None or string.lower() == 'none':
+    if string == None or string.lower() == 'none' or len(string) == 0:
         return
     if string[0] == '!':
         return string[1:]

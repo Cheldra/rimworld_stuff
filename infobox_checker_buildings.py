@@ -3,7 +3,7 @@ import os
 import infobox_checker_core as core
 import xml.etree.ElementTree as ET
 
-def define_rules():  # so far only intended for stuff the player can build
+def define_rules(): 
     return {
         'page verified for version': (core.keep, []),
         'name': (core.keep, ['label']),
@@ -12,7 +12,7 @@ def define_rules():  # so far only intended for stuff the player can build
         'description': (core.para, ['description']),
         'type': 'category',
         'type2': (categorise, ['designationCategory', 'label', 'building.isNaturalRock', 'building.isResourceRock']),
-        'placeable': (core.notnone, ['designationCategory']),
+        'placeable': (core.notnone, ['designationCategory']),  # should maybe be hidden
         'path cost': 'pathCost',
         'passability': (core.breakup, ['passability']),  # new
         'blockswind': 'blockWind',  # new
@@ -30,29 +30,33 @@ def define_rules():  # so far only intended for stuff the player can build
         'power': (power, ['comps.li-CompProperties_Power.basePowerConsumption']),
         'immunity gain speed factor': 'statBases.ImmunityGainSpeedFactor',
         'medical qualty offset': 'statBases.MedicalTendQualityOffset',
+        'surgery success chance factor': 'statBases.SurgerySuccessChanceFactor',
         'comfort': 'statBases.Comfort',
         'recreation power': 'statBases.JoyGainFactor',
         'recreation type ': (joy_lookup, ['building.joyKind']),
         'terrain affordance': (core.lc, ['terrainAffordanceNeeded']),
         'facility': (facilities_thing, ['comps.li-CompProperties_AffectedByFacilities.linkableFacilities.list']),
         'research': (research_lookup, ['researchPrerequisites.list']),
+        'tradeTags': (core.cat, ['tradeTag.list'], ['sort-reverse']),
+        'tradeability': 'tradeability',  # new
         'skill 1': (construction_needed, ['constructionSkillPrerequisite']), 
         'skill 1 level': 'constructionSkillPrerequisite',
         'work to uninstall': 'building.uninstallWork',
         'work to make': (core.depend, ['statBases.WorkToBuild', 'designationCategory']),
         'stuff tags': (core.cat, ['stuffCategories.list']),  # need to make these only print if placeable
-        'resource 1': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples' ], [1, 'resource']),
-        'resource 1 amount': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [1, 'amount']),
-        'resource 2': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [2, 'resource']),
-        'resource 2 amount': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [2, 'amount']),
-        'resource 3': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [3, 'resource']),
-        'resource 3 amount': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [3, 'amount']),
-        'resource 4': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [4, 'resource']),
-        'resource 4 amount': (cost_thing, ['costStuffCount', 'costList.tuples', 'killedLeavings.tuples'], [4, 'amount']),
+        'resource 1': (cost_thing, ['costStuffCount', 'costList.tuples', ], [1, 'resource']),
+        'resource 1 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [1, 'amount']),
+        'resource 2': (cost_thing, ['costStuffCount', 'costList.tuples'], [2, 'resource']),
+        'resource 2 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [2, 'amount']),
+        'resource 3': (cost_thing, ['costStuffCount', 'costList.tuples'], [3, 'resource']),
+        'resource 3 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [3, 'amount']),
+        'resource 4': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'resource']),
+        'resource 4 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'amount']),
         'deconstructible': (deconstructible, ['building.deconstructible', 'stealable']),  # new
-        'deconstruct yield': (core.keep, []),  # should be removed
-        'deconstruct yield fraction': 'resourcesFractionWhenDeconstructed',  # new
-        'destroy yield': (destroy, ['killedLeavings.tuples']),  # new
+        #'deconstruct yield': (core.keep, []),  # should be removed
+        'deconstructyieldfraction': 'resourcesFractionWhenDeconstructed',  # new
+        'leavesresourceswhendestroyed': (kill_resource, ['leaveResourcesWhenKilled', 'costList.tuples']),  # new
+        'bonusdestroyleavings': (destroy_thing, ['killedLeavings.tuples']),  # new
         'mineyield': 'building.mineableYield',  # new
         'mineproduct': (core.label_thing, ['building.mineableThing']),  # new
         'veinsize': (core.span, ['building.mineableScatterLumpSizeRange']),  # new
@@ -73,7 +77,7 @@ def categorise(designation, label, natural_rock, resource_rock):
 def by(in_brackets):
     n_1 = in_brackets.split(',')[0].strip('(').strip()
     n_2 = in_brackets.split(',')[1].strip(')').strip()
-    return f'{n_1}x{n_2}'
+    return f'{n_1} ˣ {n_2}'
 
 def cost_thing(resource_index, resource_or_amount, all_propagated_dicts, stuff_amount, *resource_amounts):
     if resource_index == 1 and stuff_amount != None:
@@ -115,10 +119,19 @@ def deconstructible(deconst, stealable):
         return 'false'
 
 
-def destroy(*kill_leavings):
-    if len(kill_leavings) > 5:
-        raise RuntimeError
-    pass
+def destroy_thing(all_propagated_dicts, *kill_leavings):
+    if len(kill_leavings) < 1:
+        return
+    strings = []
+    for location_string, kill_leaving in kill_leavings:
+        resource_defname = location_string.split('.')[-1]
+        resource_label = core.label_thing(all_propagated_dicts, resource_defname).capitalize()
+        strings.append(f'{kill_leaving} ' + '{{' + f'Icon small|{resource_label}' + '}}')
+    return ' + '.join(strings)
+
+def kill_resource(leavesresources, *cost_tuples):
+    if len(cost_tuples) > 1:
+        return leavesresources
 
 def power(base_consumption):
     return str(int(base_consumption)*-1)  # doesn't work for solar generator
