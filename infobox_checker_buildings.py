@@ -5,9 +5,8 @@ import xml.etree.ElementTree as ET
 
 def define_rules(): 
     return {
-        'page verified for version': (core.keep, []),
         'name': (core.keep, ['label']),
-        'image': (core.keep, ['graphicData.texPath']),
+        'image': (core.image_keep, ['label']),
         'imagesize': (core.keep, []),
         'description': (core.para, ['description']),
         'type': 'category',
@@ -33,11 +32,18 @@ def define_rules():
         'medical qualty offset': 'statBases.MedicalTendQualityOffset',
         'surgery success chance factor': 'statBases.SurgerySuccessChanceFactor',
         'comfort': 'statBases.Comfort',
+        'lightradius': 'comps.li-CompProperties_Glower.glowRadius',
+        'heatpersecond': 'comps.li-CompProperties_HeatPusher.heatPerSecond',
+        'maxheattemperature': 'comps.li-CompProperties_HeatPusher.heatPushMaxTemperature',
+        'mincooltemperature': 'comps.li-CompProperties_HeatPusher.heatPushMinTemperature',
         'recreation power': 'statBases.JoyGainFactor',
         'recreation type ': (joy_lookup, ['building.joyKind']),
+        'edifice': 'building.isEdifice',  # new
         'terrain affordance': (core.lc, ['terrainAffordanceNeeded']),
         'facility': (facilities_thing, ['comps.li-CompProperties_AffectedByFacilities.linkableFacilities.list']),
         'research': (research_lookup, ['researchPrerequisites.list']),
+        'style': 'dominantStyleCategory',  # new
+        'styledominance': 'statBases.StyleDominance',  # new
         'tradeTags': (core.cat, ['tradeTag.list'], ['sort-reverse']),
         'tradeability': 'tradeability',  # new
         'skill 1': (construction_needed, ['constructionSkillPrerequisite']), 
@@ -61,12 +67,13 @@ def define_rules():
         'mineproduct': (core.label_thing, ['building.mineableThing']),  # new
         'veinsize': (core.span, ['building.mineableScatterLumpSizeRange']),  # new
         'veincommanility': 'building.mineableScatterCommonality',  # new
-        'minedropchance': 'building.mineableDropChance'  # new
+        'minedropchance': 'building.mineableDropChance',  # new
+        'page verified for version': (core.keep, [])
         }
 
 def categorise(designation, label, natural_rock, resource_rock, *building_tags):
     if designation != None:
-        return designation
+        return designation.rstrip('s')
     if 'ancient' in label:
         return 'Ruin'
     if resource_rock != None:

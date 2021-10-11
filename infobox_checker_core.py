@@ -157,6 +157,15 @@ def keep(infobox_stat, input_dict, *args):
     if infobox_stat in input_dict:
         return input_dict[infobox_stat]
 
+def image_keep(infobox_stat, input_dict, *args):
+    if input_dict == None:
+        if len(args) == 0: # no default given
+            return
+        else:
+            return args[0].capitalize().replace(' ', '_') + '.png'
+    if infobox_stat in input_dict:
+        return input_dict[infobox_stat]
+
 def default(d, actual):
     if actual != None:
         return actual
@@ -239,7 +248,7 @@ def apply_rule(xml_dict, input_dict, all_propagated_dicts, infobox_stat, rule):
     if len(rule) > 2:
         args = rule[2]  # hard arguments
     any_found = False
-    if function.__name__ == 'keep':
+    if 'keep' in function.__name__:
         args += [infobox_stat, input_dict]
         any_found = True
     elif '_thing' in function.__name__:
@@ -292,7 +301,7 @@ def xml_to_infobox(xml_dict, input_dict, all_propagated_dicts):
         val = apply_rule(xml_dict, input_dict, all_propagated_dicts, infobox_stat, rule)
         if val != None:
             infobox[infobox_stat] = val
-    return infobox
+    return infobox, source.define_rules().keys()
 
 
 def parse_infobox(input_file):
@@ -308,8 +317,11 @@ def parse_infobox(input_file):
             
 
 def write_infobox(infobox):
-    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production']:
+    type2_dict = {'floor': 'structure'}
+    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production', 'furniture']:
         col = infobox['type2'].lower()
+    elif 'type2' in infobox.keys() and infobox['type2'].lower() in type2_dict:
+        col = type2_dict[infobox['type2'].lower()]
     elif infobox['type'].lower() in ['animal', 'plant', 'weapon', 'area', 'building', 'resource']:
         col = infobox['type'].lower()
     else:
@@ -321,18 +333,17 @@ def write_infobox(infobox):
     print('}}')
         
 
-def compare_infoboxes(infobox_1, infobox_2):
-    for stat_1, val_1 in infobox_1.items():
-        if stat_1 not in infobox_2.keys():
-            if val_1 != '':
-                print(f'{stat_1}: {val_1} -> -;')
-            continue
-        val_2 = infobox_2[stat_1]
-        if val_1.strip('\"') != infobox_2[stat_1]:
-            print(f'{stat_1}: {val_1} -> {val_2};')
-    for stat_2, val_2 in infobox_2.items():
-        if stat_2 not in infobox_1.keys():
-            print(f'{stat_2}: - -> {val_2};')
+def compare_infoboxes(infobox_1, infobox_2, key_list):
+    for stat in key_list:
+        if stat in infobox_1.keys():
+            if stat in infobox_2.keys():
+                if infobox_1[stat] != infobox_2[stat]:
+                    print(f'{stat}: {infobox_1[stat]} -> {infobox_2[stat]};')
+            else:
+                print(f'{stat}: {infobox_1[stat]} -> -;')
+        else:
+            if stat in infobox_2.keys():
+                print(f'{stat}: - -> {infobox_2[stat]};')
 
 
 if __name__ == '__main__':
@@ -367,9 +378,9 @@ if __name__ == '__main__':
         for filtered_dict in filtered_dicts:
             print()
             pp(filtered_dict)
-            output_infobox = xml_to_infobox(filtered_dict, input_infobox, all_propagated_dicts)
+            output_infobox, key_list = xml_to_infobox(filtered_dict, input_infobox, all_propagated_dicts)
             if output_infobox == None:
                 continue
             write_infobox(output_infobox)
             if input_infobox != None:
-                compare_infoboxes(input_infobox, output_infobox)
+                compare_infoboxes(input_infobox, output_infobox, key_list)
