@@ -135,6 +135,11 @@ def analyse_key(all_propagated_dicts, filters, key):
     counts = [{k: len(v) for k, v in value_label_dict.items()}]
     return value_label_dict, counts, sum([len(v) for v in value_label_dict.values()])
 
+
+def ver(base_dir):
+    with open('/' + '/'.join(base_dir.split('/')[1:-2]) + '/Version.txt') as f:
+        return f.readline().split(' ')[0]
+
 def tidy(string):
     if string == None or string.lower() == 'none' or len(string) == 0:
         return
@@ -279,7 +284,7 @@ def apply_rule(xml_dict, input_dict, all_propagated_dicts, infobox_stat, rule):
     try:
         value = tidy(function(*args))
     except:
-        raise RuntimeError(xml_dict['label'], infobox_stat, rule)
+        raise RuntimeError(xml_dict['label'], infobox_stat)
     if value != None:
         return value
     
@@ -318,7 +323,7 @@ def parse_infobox(input_file):
 
 def write_infobox(infobox):
     type2_dict = {'floor': 'structure'}
-    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production', 'furniture']:
+    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production', 'furniture', 'misc', 'security']:
         col = infobox['type2'].lower()
     elif 'type2' in infobox.keys() and infobox['type2'].lower() in type2_dict:
         col = type2_dict[infobox['type2'].lower()]
@@ -337,13 +342,20 @@ def compare_infoboxes(infobox_1, infobox_2, key_list):
     for stat in key_list:
         if stat in infobox_1.keys():
             if stat in infobox_2.keys():
-                if infobox_1[stat] != infobox_2[stat]:
+                if infobox_1[stat].replace('\"', '') != infobox_2[stat]:
                     print(f'{stat}: {infobox_1[stat]} -> {infobox_2[stat]};')
-            else:
+                    if stat == 'description':
+                        print('description changes;')
+            elif infobox_1[stat].strip() != '':
                 print(f'{stat}: {infobox_1[stat]} -> -;')
         else:
             if stat in infobox_2.keys():
                 print(f'{stat}: - -> {infobox_2[stat]};')
+    for stat in infobox_1.keys():
+        if stat in key_list:
+            continue
+        if infobox_1[stat].strip() != '':
+            print(f'{stat}: {infobox_1[stat]} -> -;')
 
 
 if __name__ == '__main__':
@@ -381,6 +393,8 @@ if __name__ == '__main__':
             output_infobox, key_list = xml_to_infobox(filtered_dict, input_infobox, all_propagated_dicts)
             if output_infobox == None:
                 continue
+            if args.l != None:
+                output_infobox['page verified for version'] = ver(base_dir)
             write_infobox(output_infobox)
             if input_infobox != None:
                 compare_infoboxes(input_infobox, output_infobox, key_list)
