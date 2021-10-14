@@ -1,7 +1,7 @@
-from collections import OrderedDict
 import os
 import infobox_checker_core as core
 import xml.etree.ElementTree as ET
+import infobox_checker_buildings as buildings
 
 def define_rules():
     return {
@@ -15,17 +15,19 @@ def define_rules():
         'passability': (core.breakup, ['passability']),  # new
         'blockswind': 'blockWind',  # new
         'cover': 'fillPercent',
-        'minifiable': (core.notnone, ['minifiedDef']),  # new
+        'minifiable': (minifiable, ['minifiedDef', 'plant.treeCategory']),  # new
         'hp': 'statBases.MaxHitPoints',
         'flammability': 'statBases.Flammability',
-        'mass base': (core.depend, ['statBases.Mass', 'minifiable']),
+        'mass base': (core.depend, ['statBases.Mass', 'minifiedDef']),
         'beauty': 'statBases.Beauty',
         'beauty outdoors': 'statBases.BeautyOutdoors',
         'grow days': 'plant.growDays',
+        'glowradius': 'comps.li-CompProperties_Glower.glowRadius',
+        'glowcolor': (buildings.glowcol, ['comps.li-CompProperties_Glower.glowColor']),
         'lifespanDaysPerGrowDays': 'plant.lifespanDaysPerGrowDays',
         'sow work': (core.depend, ['plant.sowWork', 'plant.sowTags.1']),
         'harvest work': 'plant.harvestWork',
-        'product': (core.def_to_label, ['plant.harvestedThingDef']),
+        'product': (core.label_thing, ['plant.harvestedThingDef']),
         'yield': 'plant.harvestYield',
         'min sowing skill': (core.depend, ['plant.sowMinSkill', 'plant.sowTags.1']),
         'min fertility': 'plant.fertilityMin',
@@ -56,6 +58,12 @@ def plant_subtype(tree_category, sow_tag_1, purpose, *args):
         return 'Domesticated'
     return 'Wild'
 
+def minifiable(mini_def, tree_category):
+    if mini_def is not None:
+        return 'true'
+    if tree_category is not None:
+        return 'false'
+
 def biome_lookup(biome_defname, base_dir, plant_defname):
     folder = 'Core/Defs/BiomeDefs/'
     for filename in os.listdir(base_dir + folder):
@@ -75,5 +83,3 @@ def biome_lookup(biome_defname, base_dir, plant_defname):
     for tag in wild:
         if tag.tag == plant_defname:
                 return tag.text           
-
-rules = define_rules()

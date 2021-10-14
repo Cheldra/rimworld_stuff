@@ -10,7 +10,7 @@ def define_rules():
         'imagesize': (core.keep, []),
         'description': (core.para, ['description']),
         'type': 'category',
-        'type2': (categorise, ['designationCategory', 'label', 'building.isNaturalRock', 'building.isResourceRock', 'building.buildingTags.list']),
+        'type2': (categorise, ['designationCategory', 'label', 'graphicData.texPath', 'building.isNaturalRock', 'building.isResourceRock', 'building.buildingTags.list']),
         'placeable': (placeable_default, ['designationCategory']),  # should maybe be hidden
         'path cost': 'pathCost',
         'passability': (core.breakup, ['passability']),  # new
@@ -41,11 +41,12 @@ def define_rules():
         'recreation power': 'statBases.JoyGainFactor',
         'recreation type': (joy_lookup, ['building.joyKind']),
         #'edifice': 'building.isEdifice',  # new
-        'terrain affordance': (terrain_affordance, ['terrainAffordanceNeeded', 'useStuffTerrainAffordance', 'stuffCategories.list']),
+        'terrain affordance': (terrain_affordance, ['terrainAffordanceNeeded', 'useStuffTerrainAffordance', 'designationCategory', 'stuffCategories.list']),
         'facility': (facilities_thing, ['comps.li-CompProperties_AffectedByFacilities.linkableFacilities.list']),
         'research': (research_lookup, ['researchPrerequisites.list']),
         'style': 'dominantStyleCategory',  # new
         'styledominance': 'statBases.StyleDominance',  # new
+        'marketvalue': (core.keep, []),
         'tradeTags': (core.cat, ['tradeTag.list'], ['sort-reverse']),
         'tradeability': 'tradeability',  # new
         'thingCategories': (core.cat, ['thingCategories.list']),
@@ -53,14 +54,14 @@ def define_rules():
         'skill 1 level': 'constructionSkillPrerequisite',
         'work to make': (core.depend, ['statBases.WorkToBuild', 'designationCategory']),
         'stuff tags': (core.cat, ['stuffCategories.list']),  # need to make these only print if placeable
-        'resource 1': (cost_thing, ['costStuffCount', 'costList.tuples', ], [1, 'resource']),
-        'resource 1 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [1, 'amount']),
-        'resource 2': (cost_thing, ['costStuffCount', 'costList.tuples'], [2, 'resource']),
-        'resource 2 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [2, 'amount']),
-        'resource 3': (cost_thing, ['costStuffCount', 'costList.tuples'], [3, 'resource']),
-        'resource 3 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [3, 'amount']),
-        'resource 4': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'resource']),
-        'resource 4 amount': (cost_thing, ['costStuffCount', 'costList.tuples'], [4, 'amount']),
+        'resource 1': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples', ], [1, 'resource']),
+        'resource 1 amount': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [1, 'amount']),
+        'resource 2': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [2, 'resource']),
+        'resource 2 amount': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [2, 'amount']),
+        'resource 3': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [3, 'resource']),
+        'resource 3 amount': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [3, 'amount']),
+        'resource 4': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [4, 'resource']),
+        'resource 4 amount': (cost_thing, ['designationCategory', 'costStuffCount', 'costList.tuples'], [4, 'amount']),
         'deconstructable': (deconstructable, ['building.deconstructible', 'stealable']),  # new
         'deconstruct yield': (deconstruct_yield_thing, ['designationCategory', 'building.deconstructible', 'resourcesFractionWhenDeconstructed', 'costStuffCount', 'costList.tuples']),
         #'deconstructyieldfraction': 'resourcesFractionWhenDeconstructed',  # new
@@ -91,19 +92,20 @@ def define_rules():
         'page verified for version': (core.keep, [])
         }
 
-def categorise(designation, label, natural_rock, resource_rock, *building_tags):
+def categorise(designation, label, texpath, natural_rock, resource_rock, *building_tags):
     if designation != None:
         if designation == 'Joy':
             return 'Recreation'
         return designation.rstrip('s')
-    if 'ancient' in label:
+    if 'ancient' in label or 'Ruins' in texpath:
         return 'Ruin'
     if resource_rock != None:
         return 'Ore'
     if natural_rock != None:
         return 'Stone'
-    if 'MechClusterMember' in building_tags:
-        return 'Mechanoid cluster'
+    for tag in building_tags:
+        if 'MechCluster' in tag:
+            return 'Mechanoid cluster'
 
 def placeable_default(designation):
     if designation != None:
@@ -118,15 +120,16 @@ def by_default(in_brackets):
     return f'{n_1} ˣ {n_2}'
 
 def minifiable_default(minified_def, designation_category, stealable):
-    if designation_category != None or (stealable != None and stealable.lower() == 'true'):
-        if minified_def != None:
-            return 'true'
-        else:
-            return 'false'
+    if minified_def != None:
+        return 'true'
+    if designation_category != None:
+        return 'false'
 
-def terrain_affordance(actual, use_from_stuff, *stuff_tags):
+def terrain_affordance(actual, use_from_stuff, designation_category, *stuff_tags):
+    if designation_category is None:
+        return
     if use_from_stuff is None or use_from_stuff.lower() != 'true':
-        return actual
+        return actual.lower()
     heavy_stuff = ['Metallic', 'Stony']
     light_stuff = ['Woody', 'Fabric', 'Leathery']
     heavy = False
@@ -137,17 +140,19 @@ def terrain_affordance(actual, use_from_stuff, *stuff_tags):
         elif stuff in light_stuff:
             light = True
     if light and heavy:
-        return 'Light-Heavy'
+        return 'light-heavy'
     elif heavy:
-        return 'Heavy'
+        return 'heavy'
     elif light:
-        return 'Light'
+        return 'light'
     raise RuntimeError(f'bad stuff tags: {stuff_tags}')
 
 def glowcol(cols):
     return ', '.join(c.strip() for c in cols.split(',')[:-1]) + ')'
 
-def cost_thing(resource_index, resource_or_amount, all_propagated_dicts, stuff_amount, *resource_amounts):
+def cost_thing(resource_index, resource_or_amount, all_propagated_dicts, designation_category, stuff_amount, *resource_amounts):
+    if designation_category is None:
+        return
     if resource_index == 1 and stuff_amount != None:
         if resource_or_amount == 'resource':
             return 'Stuff'
@@ -270,7 +275,7 @@ def research_lookup(base_dir, *research_defnames):
                     research_labels.append(research_def.find('label').text)
     if len(research_labels) < len(research_defnames):
         raise RuntimeError(f'researches not found: \"{research_defnames}\"')
-    return core.cat(*research_labels).lower()
+    return core.cat(*[r.capitalize() for r in research_labels])
         
 def construction_needed(constructionSkillPrerequisite):
     return 'Construction'
