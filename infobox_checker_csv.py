@@ -2,6 +2,8 @@ import infobox_checker_core as core
 import infobox_checker_pawns as pawns
 from pprint import pprint as pp
 import argparse
+import math
+import curve
 
 
 def get_all_prop_dicts(base_dirs):
@@ -78,16 +80,59 @@ if __name__ == '__main__':
     output_infoboxes = []
     for filtered_dict in filtered_dicts:
         output_infobox, key_list = core.xml_to_infobox(filtered_dict, None, all_prop_dicts)
-        pp(output_infobox)
         output_infoboxes.append(output_infobox)
         for key in key_list:
             if key in output_infobox and output_infobox[key] != '' and key not in total_key_list:
                 total_key_list.append(key)
     print(total_key_list)
     
+    for i, infobox in enumerate(output_infoboxes):
+        def_name = filtered_dicts[i]['defName']
+        if def_name[:2] == 'AA':
+            source = 'AA'
+        elif def_name[:4] == 'AEXP':
+            source = 'AEXP'
+        else:
+            source = ''
+            
+        if 'juvenileage' in infobox and 'maturityage' in infobox:
+            raw_juv = float(infobox['juvenileage'])
+            raw_mat = float(infobox['maturityage'])
+            infobox['actual maturity age'] = str((1-1/math.e)*raw_mat)
+            infobox['actual juvenile age'] = str((1-1/math.e**(raw_juv/raw_mat))*raw_mat)
+        if 'hungerrate' in infobox:
+            infobox['actual adult hunger'] = str(float(infobox['hungerrate'])*1.6)
+            
+        if 'basemeatamount' in infobox:
+            base_meat_amount = float(infobox['basemeatamount'])
+        else:
+            base_meat_amount = 140
+        if 'baseleatheramount' in infobox:
+            base_leather_amount = float(infobox['baseleatheramount'])
+        else:
+            base_leather_amount = 40
+        if 'babyscale' in infobox:
+            baby_scale = float(infobox['babyscale'])
+        else:
+            baby_scale = 0.2
+        if 'bodysize' in infobox:
+            body_size = float(infobox['bodysize'])
+        else:
+            baby_scale = 1
+        
+        infobox['adult meat yield'] = str(curve.post_process_curve(body_size*base_meat_amount))
+        infobox['baby meat yield'] = str(curve.post_process_curve(body_size*base_meat_amount*baby_scale))
+        infobox['adult leather yield'] = str(curve.post_process_curve(body_size*base_leather_amount))
+        infobox['baby leather yield'] = str(curve.post_process_curve(body_size*base_leather_amount*baby_scale))
+        infobox['source'] = source
+    
+    total_key_list += ['actual maturity age', 'actual juvenile age', 'actual adult hunger',
+                       'adult meat yield', 'baby meat yield', 'adult leather yield', 'baby leather yield', 'source']     
+            
+    
     with open('infobox_processed.tsv', 'w') as f:
         f.write('\t'.join(total_key_list) + '\n')
-        for output_infobox in output_infoboxes:
+        for i, output_infobox in enumerate(output_infoboxes):
             spaced_infobox_values = []
             for key in total_key_list:
                 if key not in output_infobox or output_infobox[key] is None:
