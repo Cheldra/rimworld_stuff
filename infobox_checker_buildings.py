@@ -11,15 +11,15 @@ def define_rules():
         'description': (core.para, ['description']),
         'type': 'category',
         'type2': (categorise, ['designationCategory', 'label', 'graphicData.texPath', 'building.isNaturalRock', 'building.isResourceRock', 'building.buildingTags.list']),
-        'placeable': (placeable_default, ['designationCategory']),  # should maybe be hidden
-        'path cost': 'pathCost',
+        'placeable': (placeable_default, ['designationCategory', 'minifiedDef']),  # should maybe be hidden
+        'path cost': (path_cost, ['pathCost', 'passability']),
         'passability': (core.breakup, ['passability']),  # new
         'blockswind': 'blockWind',  # new
         'cover': 'fillPercent',
         'minifiable': (minifiable_default, ['minifiedDef', 'designationCategory', 'stealable']),  # new        
         'size': (by_default, ['size']),
-        'rotatable': (core.keep, []),
-        'mass base':(core.depend, ['statBases.Mass', 'minifiedDef']),
+        'rotatable': (rotatable_keep, ['rotatable']),
+        'mass base': 'statBases.Mass',
         'flammability': (flammability_default, ['statBases.Flammability']),
         'hp': 'statBases.MaxHitPoints',
         'sell price multiplier': (core.depend, ['statBases.SellPriceFactor', 'minifiedDef']),
@@ -107,10 +107,14 @@ def categorise(designation, label, texpath, natural_rock, resource_rock, *buildi
         if 'MechCluster' in tag:
             return 'Mechanoid cluster'
 
-def placeable_default(designation):
-    if designation != None:
+def placeable_default(designation, minified_def):
+    if designation is not None or minified_def is not None:
         return 'true'
     return 'false'
+
+def path_cost(actual, passability):
+    if passability is None or passability.lower() != 'impassable':
+        return actual
 
 def by_default(in_brackets):
     if in_brackets == None:
@@ -125,9 +129,16 @@ def minifiable_default(minified_def, designation_category, stealable):
     if designation_category != None:
         return 'false'
 
-def terrain_affordance(actual, use_from_stuff, designation_category, *stuff_tags):
-    if designation_category is None:
+def rotatable_keep(infobox_stat, input_dict, actual):
+    if input_dict is None:
         return
+    if infobox_stat in input_dict:
+        if actual != None:
+            return actual.lower()
+        return input_dict[infobox_stat]
+
+
+def terrain_affordance(actual, use_from_stuff, designation_category, *stuff_tags):
     if use_from_stuff is None or use_from_stuff.lower() != 'true':
         return actual.lower()
     heavy_stuff = ['Metallic', 'Stony']
@@ -140,7 +151,7 @@ def terrain_affordance(actual, use_from_stuff, designation_category, *stuff_tags
         elif stuff in light_stuff:
             light = True
     if light and heavy:
-        return 'light-heavy'
+        return 'depends on materials'
     elif heavy:
         return 'heavy'
     elif light:
@@ -303,4 +314,5 @@ def turret_thing(location_strings, all_propagated_dicts, turret_defname):
         return turret[location_strings[0]]
     if location_strings[0] in turret.keys():
         bullet = all_propagated_dicts[turret[location_strings[0]]]
-        return bullet[location_strings[1]]
+        if location_strings[1] in bullet:
+            return bullet[location_strings[1]]

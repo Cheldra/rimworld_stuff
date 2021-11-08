@@ -323,7 +323,7 @@ def parse_infobox(input_file):
 
 def write_infobox(infobox):
     type2_dict = {'floor': 'structure'}
-    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production', 'furniture', 'misc', 'security']:
+    if 'type2' in infobox.keys() and infobox['type2'].lower() in ['production', 'furniture', 'misc', 'security', 'structure']:
         col = infobox['type2'].lower()
     elif 'type2' in infobox.keys() and infobox['type2'].lower() in type2_dict:
         col = type2_dict[infobox['type2'].lower()]
